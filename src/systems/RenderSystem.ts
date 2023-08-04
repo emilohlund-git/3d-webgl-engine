@@ -1,78 +1,32 @@
-import { mat4 } from "gl-matrix";
 import { WebGLCanvas } from "../WebGLCanvas";
-import { ColorBuffer } from "../buffers/ColorBuffer";
-import { IBO } from "../buffers/IBO";
-import { VBO } from "../buffers/VBO";
+import { BufferManager } from "../buffers/BufferManager";
 import { RenderComponent } from "../components/RenderComponent";
-import { TransformComponent } from "../components/TransformComponent";
+import { Entity } from "../entities/Entity";
 import { EntityManager } from "../entities/EntityManager";
 import { System } from "./System";
 
 export class RenderSystem extends System {
-  private vbo: VBO;
-  private ibo: IBO;
-  private colorBuffer: ColorBuffer;
   private entityManager: EntityManager;
+  private bufferManager: BufferManager;
   private gl: WebGL2RenderingContext;
   private canvas: WebGLCanvas;
 
-  constructor(canvas: WebGLCanvas, entityManager: EntityManager) {
+  constructor(canvas: WebGLCanvas, entityManager: EntityManager, bufferManager: BufferManager) {
     super();
 
     this.canvas = canvas;
     this.gl = canvas.gl;
-    this.vbo = new VBO(this.gl);
-    this.ibo = new IBO(this.gl);
-    this.colorBuffer = new ColorBuffer(this.gl);
+    this.bufferManager = bufferManager;
     this.entityManager = entityManager;
   }
 
   preload() {
     const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
-    entities.forEach(entity => {
-      const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");
-      if (!renderComponent) return;
-
-      this.vbo.createBuffer(entity.id, new Float32Array(renderComponent.vertices));
-      this.ibo.createBuffer(entity.id, new Uint16Array(renderComponent.indices));
-      this.colorBuffer.createBuffer(entity.id, new Float32Array(renderComponent.colors));
-
-      this.vbo.bindBuffer(entity.id);
-      this.ibo.bindBuffer(entity.id);
-    });
-
+    this.preloadEntities(entities);
     this.canvas.setViewPort();
   }
 
-  update(deltaTime: number) {
-    const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
-    entities.forEach(entity => {
-      const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");
-      const transformComponent = entity.getComponent<TransformComponent>("TransformComponent");
-      if (!renderComponent || !transformComponent) return;
-
-      const modelMatrix = transformComponent.getModelMatrix();
-
-      const projectionMatrix = mat4.create();
-      mat4.perspective(projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
-
-      const viewMatrix = mat4.create();
-
-      mat4.rotateZ(modelMatrix, modelMatrix, 0.001 * deltaTime);
-      mat4.rotateX(modelMatrix, modelMatrix, 0.001 * deltaTime);
-      mat4.rotateY(modelMatrix, modelMatrix, 0.001 * deltaTime);
-
-      viewMatrix[14] = viewMatrix[14] - 6;
-
-      renderComponent.shaderProgram.setUniformMatrix4fv("pMatrix", projectionMatrix);
-      renderComponent.shaderProgram.setUniformMatrix4fv("vMatrix", viewMatrix);
-      renderComponent.shaderProgram.setUniformMatrix4fv("mMatrix", modelMatrix);
-
-      this.vbo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program!, "coordinates", 3, this.gl.FLOAT, 0, 0);
-      this.ibo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program!, "coordinates", 3, this.gl.FLOAT, 0, 0);
-      this.colorBuffer.associateWithAttribute(entity.id, renderComponent.shaderProgram.program!, "color", 3, this.gl.FLOAT, 0, 0);
-    });
-  }
+  update() { }
 
   render() {
     this.canvas.clear();
@@ -85,5 +39,19 @@ export class RenderSystem extends System {
 
       this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
     });
+  }
+
+  private preloadEntities(entities: Entity[]) {
+    for (const entity of entities) {
+      const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");
+      if (!renderComponent) return;
+
+      this.bufferManager.createVBO(entity.id, new Float32Array(renderComponent.vertices));
+      this.bufferManager.createIBO(entity.id, new Uint16Array(renderComponent.indices));
+      this.bufferManager.createColorBuffer(entity.id, new Float32Array(renderComponent.colors));
+
+      this.bufferManager.bindVBO(entity.id);
+      this.bufferManager.bindIBO(entity.id);
+    }
   }
 }

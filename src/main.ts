@@ -1,18 +1,20 @@
 import { Game } from "./Game";
 import { ShaderProgram } from "./ShaderProgram";
 import { WebGLCanvas } from "./WebGLCanvas";
+import { BufferManager } from "./buffers/BufferManager";
 import { RenderComponent } from "./components/RenderComponent";
 import { TransformComponent } from "./components/TransformComponent";
 import { Entity } from "./entities/Entity";
 import { EntityManager } from "./entities/EntityManager";
 import { RenderSystem } from "./systems/RenderSystem";
+import { TransformSystem } from "./systems/TransformSystem";
 
 const main = async () => {
-  const window = new WebGLCanvas(400, 400);
+  const window = new WebGLCanvas(800, 800);
 
   const entityManager = new EntityManager();
 
-  const triangle = new Entity();
+  const cube = new Entity();
 
   const shaderProgram = new ShaderProgram(window.gl);
   await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
@@ -45,16 +47,19 @@ const main = async () => {
 
   const transformComponent = new TransformComponent();
 
-  triangle.addComponent("RenderComponent", renderComponent);
-  triangle.addComponent("TransformComponent", transformComponent);
+  cube.addComponent("RenderComponent", renderComponent);
+  cube.addComponent("TransformComponent", transformComponent);
 
-  entityManager.addEntity(triangle);
+  entityManager.addEntity(cube);
 
   const game = new Game(entityManager);
 
-  const renderSystem = new RenderSystem(window, entityManager);
+  const bufferManager = new BufferManager(window.gl)
+  const renderSystem = new RenderSystem(window, entityManager, bufferManager);
+  const transformSystem = new TransformSystem(window, entityManager, bufferManager);
 
   game.addSystem(renderSystem);
+  game.addSystem(transformSystem);
   game.run();
 };
 

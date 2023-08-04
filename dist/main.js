@@ -4673,6 +4673,119 @@ var WebGLCanvas = class {
   }
 };
 
+// src/buffers/Buffer.ts
+var GLBuffer = class {
+  constructor(gl, buffers, contextBase) {
+    this.gl = gl;
+    this.buffers = buffers;
+    this.contextBase = contextBase;
+  }
+  createBuffer(name, data) {
+    const indexBuffer = this.gl.createBuffer();
+    if (!indexBuffer)
+      return;
+    console.log("Created buffer: " + this.constructor.name);
+    this.buffers.set(name, indexBuffer);
+    this.bindBuffer(name);
+    this.gl.bufferData(this.contextBase, data, this.gl.STATIC_DRAW);
+    this.unbindBuffer(name);
+  }
+  associateWithAttribute(name, program, attribute, size, type, stride, offset) {
+    if (!this.buffers.get(name))
+      return;
+    this.bindBuffer(name);
+    const attributeLocation = this.gl.getAttribLocation(program, attribute);
+    this.gl.vertexAttribPointer(attributeLocation, size, type, false, stride, offset);
+    this.gl.enableVertexAttribArray(attributeLocation);
+  }
+  bindBuffer(name) {
+    const buffer = this.buffers.get(name);
+    if (!buffer)
+      return;
+    this.gl.bindBuffer(this.contextBase, buffer);
+  }
+  unbindBuffer(name) {
+    const buffer = this.buffers.get(name);
+    if (!buffer)
+      return;
+    this.gl.bindBuffer(this.contextBase, null);
+  }
+  getBuffer(name) {
+    return this.buffers.get(name);
+  }
+};
+
+// src/buffers/ColorBuffer.ts
+var ColorBuffer = class extends GLBuffer {
+  constructor(gl) {
+    super(gl, /* @__PURE__ */ new Map(), gl.ARRAY_BUFFER);
+  }
+};
+
+// src/buffers/IBO.ts
+var IBO = class extends GLBuffer {
+  constructor(gl) {
+    super(gl, /* @__PURE__ */ new Map(), gl.ELEMENT_ARRAY_BUFFER);
+  }
+};
+
+// src/buffers/VBO.ts
+var VBO = class extends GLBuffer {
+  constructor(gl) {
+    super(gl, /* @__PURE__ */ new Map(), gl.ARRAY_BUFFER);
+  }
+};
+
+// src/buffers/BufferManager.ts
+var BufferManager = class {
+  constructor(gl) {
+    this.gl = gl;
+    this.vbos = /* @__PURE__ */ new Map();
+    this.ibos = /* @__PURE__ */ new Map();
+    this.colorBuffers = /* @__PURE__ */ new Map();
+  }
+  createVBO(id, data) {
+    const vbo = new VBO(this.gl);
+    vbo.createBuffer(id, data);
+    this.vbos.set(id, vbo);
+  }
+  createIBO(id, data) {
+    const ibo = new IBO(this.gl);
+    ibo.createBuffer(id, data);
+    this.ibos.set(id, ibo);
+  }
+  createColorBuffer(id, data) {
+    const colorBuffer = new ColorBuffer(this.gl);
+    colorBuffer.createBuffer(id, data);
+    this.colorBuffers.set(id, colorBuffer);
+  }
+  bindVBO(id) {
+    const vbo = this.vbos.get(id);
+    if (vbo)
+      vbo.bindBuffer(id);
+  }
+  bindIBO(id) {
+    const ibo = this.ibos.get(id);
+    if (ibo)
+      ibo.bindBuffer(id);
+  }
+  associateVBOWithAttribute(id, program, attribute, size, type, stride, offset) {
+    const vbo = this.vbos.get(id);
+    if (vbo)
+      vbo.associateWithAttribute(id, program.program, attribute, size, type, stride, offset);
+  }
+  associateIBOWithAttribute(id, program, attribute, size, type, stride, offset) {
+    const ibo = this.ibos.get(id);
+    if (ibo)
+      ibo.associateWithAttribute(id, program.program, attribute, size, type, stride, offset);
+  }
+  associateColorBufferWithAttribute(id, program, attribute, size, type, stride, offset) {
+    const colorBuffer = this.colorBuffers.get(id);
+    if (colorBuffer)
+      colorBuffer.associateWithAttribute(id, program.program, attribute, size, type, stride, offset);
+  }
+};
+
 // src/components/RenderComponent.ts
 var import_gl_matrix = __toESM(require_cjs());
 
@@ -4803,100 +4916,61 @@ var EntityManager = class {
   }
 };
 
-// src/systems/RenderSystem.ts
-var import_gl_matrix3 = __toESM(require_cjs());
-
-// src/buffers/Buffer.ts
-var GLBuffer = class {
-  constructor(gl, buffers, contextBase) {
-    this.gl = gl;
-    this.buffers = buffers;
-    this.contextBase = contextBase;
-  }
-  createBuffer(name, data) {
-    const indexBuffer = this.gl.createBuffer();
-    if (!indexBuffer)
-      return;
-    console.log("Created buffer: " + this.constructor.name);
-    this.buffers.set(name, indexBuffer);
-    this.bindBuffer(name);
-    this.gl.bufferData(this.contextBase, data, this.gl.STATIC_DRAW);
-    this.unbindBuffer(name);
-  }
-  associateWithAttribute(name, program, attribute, size, type, stride, offset) {
-    if (!this.buffers.get(name))
-      return;
-    this.bindBuffer(name);
-    const attributeLocation = this.gl.getAttribLocation(program, attribute);
-    this.gl.vertexAttribPointer(attributeLocation, size, type, false, stride, offset);
-    this.gl.enableVertexAttribArray(attributeLocation);
-  }
-  bindBuffer(name) {
-    const buffer = this.buffers.get(name);
-    if (!buffer)
-      return;
-    this.gl.bindBuffer(this.contextBase, buffer);
-  }
-  unbindBuffer(name) {
-    const buffer = this.buffers.get(name);
-    if (!buffer)
-      return;
-    this.gl.bindBuffer(this.contextBase, null);
-  }
-  getBuffer(name) {
-    return this.buffers.get(name);
-  }
-};
-
-// src/buffers/ColorBuffer.ts
-var ColorBuffer = class extends GLBuffer {
-  constructor(gl) {
-    super(gl, /* @__PURE__ */ new Map(), gl.ARRAY_BUFFER);
-  }
-};
-
-// src/buffers/IBO.ts
-var IBO = class extends GLBuffer {
-  constructor(gl) {
-    super(gl, /* @__PURE__ */ new Map(), gl.ELEMENT_ARRAY_BUFFER);
-  }
-};
-
-// src/buffers/VBO.ts
-var VBO = class extends GLBuffer {
-  constructor(gl) {
-    super(gl, /* @__PURE__ */ new Map(), gl.ARRAY_BUFFER);
-  }
-};
-
 // src/systems/System.ts
 var System = class {
 };
 
 // src/systems/RenderSystem.ts
 var RenderSystem = class extends System {
-  constructor(canvas, entityManager) {
+  constructor(canvas, entityManager, bufferManager) {
     super();
     this.canvas = canvas;
     this.gl = canvas.gl;
-    this.vbo = new VBO(this.gl);
-    this.ibo = new IBO(this.gl);
-    this.colorBuffer = new ColorBuffer(this.gl);
+    this.bufferManager = bufferManager;
     this.entityManager = entityManager;
   }
   preload() {
+    const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
+    this.preloadEntities(entities);
+    this.canvas.setViewPort();
+  }
+  update() {
+  }
+  render() {
+    this.canvas.clear();
     const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
     entities.forEach((entity) => {
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
         return;
-      this.vbo.createBuffer(entity.id, new Float32Array(renderComponent.vertices));
-      this.ibo.createBuffer(entity.id, new Uint16Array(renderComponent.indices));
-      this.colorBuffer.createBuffer(entity.id, new Float32Array(renderComponent.colors));
-      this.vbo.bindBuffer(entity.id);
-      this.ibo.bindBuffer(entity.id);
+      this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
     });
-    this.canvas.setViewPort();
+  }
+  preloadEntities(entities) {
+    for (const entity of entities) {
+      const renderComponent = entity.getComponent("RenderComponent");
+      if (!renderComponent)
+        return;
+      this.bufferManager.createVBO(entity.id, new Float32Array(renderComponent.vertices));
+      this.bufferManager.createIBO(entity.id, new Uint16Array(renderComponent.indices));
+      this.bufferManager.createColorBuffer(entity.id, new Float32Array(renderComponent.colors));
+      this.bufferManager.bindVBO(entity.id);
+      this.bufferManager.bindIBO(entity.id);
+    }
+  }
+};
+
+// src/systems/TransformSystem.ts
+var import_gl_matrix3 = __toESM(require_cjs());
+var TransformSystem = class extends System {
+  constructor(canvas, entityManager, bufferManager) {
+    super();
+    this.canvas = canvas;
+    this.gl = canvas.gl;
+    this.bufferManager = bufferManager;
+    this.entityManager = entityManager;
+  }
+  preload() {
   }
   update(deltaTime) {
     const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
@@ -4916,28 +4990,20 @@ var RenderSystem = class extends System {
       renderComponent.shaderProgram.setUniformMatrix4fv("pMatrix", projectionMatrix);
       renderComponent.shaderProgram.setUniformMatrix4fv("vMatrix", viewMatrix);
       renderComponent.shaderProgram.setUniformMatrix4fv("mMatrix", modelMatrix);
-      this.vbo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "coordinates", 3, this.gl.FLOAT, 0, 0);
-      this.ibo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "coordinates", 3, this.gl.FLOAT, 0, 0);
-      this.colorBuffer.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "color", 3, this.gl.FLOAT, 0, 0);
+      this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "coordinates", 3, this.gl.FLOAT, 0, 0);
+      this.bufferManager.associateIBOWithAttribute(entity.id, renderComponent.shaderProgram, "coordinates", 3, this.gl.FLOAT, 0, 0);
+      this.bufferManager.associateColorBufferWithAttribute(entity.id, renderComponent.shaderProgram, "color", 3, this.gl.FLOAT, 0, 0);
     });
   }
   render() {
-    this.canvas.clear();
-    const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
-    entities.forEach((entity) => {
-      const renderComponent = entity.getComponent("RenderComponent");
-      if (!renderComponent)
-        return;
-      this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
-    });
   }
 };
 
 // src/main.ts
 var main = async () => {
-  const window = new WebGLCanvas(400, 400);
+  const window = new WebGLCanvas(800, 800);
   const entityManager = new EntityManager();
-  const triangle = new Entity();
+  const cube = new Entity();
   const shaderProgram = new ShaderProgram(window.gl);
   await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
   const renderComponent = new RenderComponent(
@@ -5131,12 +5197,15 @@ var main = async () => {
     shaderProgram
   );
   const transformComponent = new TransformComponent();
-  triangle.addComponent("RenderComponent", renderComponent);
-  triangle.addComponent("TransformComponent", transformComponent);
-  entityManager.addEntity(triangle);
+  cube.addComponent("RenderComponent", renderComponent);
+  cube.addComponent("TransformComponent", transformComponent);
+  entityManager.addEntity(cube);
   const game = new Game(entityManager);
-  const renderSystem = new RenderSystem(window, entityManager);
+  const bufferManager = new BufferManager(window.gl);
+  const renderSystem = new RenderSystem(window, entityManager, bufferManager);
+  const transformSystem = new TransformSystem(window, entityManager, bufferManager);
   game.addSystem(renderSystem);
+  game.addSystem(transformSystem);
   game.run();
 };
 document.addEventListener("DOMContentLoaded", () => {
