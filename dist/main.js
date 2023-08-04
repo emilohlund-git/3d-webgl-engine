@@ -4708,9 +4708,11 @@ var Component = class {
 
 // src/components/RenderComponent.ts
 var RenderComponent = class extends Component {
-  constructor(vertexData, position, shaderProgram) {
+  constructor(vertices, indices, colors, position, shaderProgram) {
     super("RenderComponent");
-    this.vertexData = vertexData;
+    this.vertices = vertices;
+    this.indices = indices;
+    this.colors = colors;
     this.position = position;
     this.shaderProgram = shaderProgram;
   }
@@ -4780,39 +4782,23 @@ var EntityManager = class {
 // src/systems/RenderSystem.ts
 var import_gl_matrix = __toESM(require_cjs());
 
-// src/VBO.ts
-var VBO = class {
-  /**
-   * Creates a new VBO instance.
-   * @param {WebGL2RenderingContext} gl - The WebGL context.
-   */
-  constructor(gl) {
+// src/buffers/Buffer.ts
+var GLBuffer = class {
+  constructor(gl, buffers, contextBase) {
     this.gl = gl;
-    this.buffers = /* @__PURE__ */ new Map();
+    this.buffers = buffers;
+    this.contextBase = contextBase;
   }
-  /**
-   * Creates a new vertex buffer and associates it with the specified name.
-   * @param {string} name - The unique name to associate with the buffer.
-   * @param {number[]} vertices - The vertex data array.
-   */
-  createVertexBuffer(name, vertices) {
-    const vertexBuffer = this.gl.createBuffer();
-    if (!vertexBuffer)
+  createBuffer(name, data) {
+    const indexBuffer = this.gl.createBuffer();
+    if (!indexBuffer)
       return;
-    this.buffers.set(name, vertexBuffer);
+    console.log("Created buffer: " + this.constructor.name);
+    this.buffers.set(name, indexBuffer);
     this.bindBuffer(name);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+    this.gl.bufferData(this.contextBase, data, this.gl.STATIC_DRAW);
     this.unbindBuffer(name);
   }
-  /**
-   * Associates the specified buffer with the provided shader program attribute.
-   * @param {WebGLProgram} program - The WebGL program to associate the buffer with.
-   * @param {string} attribute - The name of the attribute in the shader program.
-   * @param {number} size - The number of components per vertex attribute (e.g., 2 for (x, y)).
-   * @param {number} type - The data type of the attribute.
-   * @param {number} stride - The offset in bytes between consecutive vertex attributes.
-   * @param {number} offset - The offset in bytes of the first component in the vertex attribute.
-   */
   associateWithAttribute(name, program, attribute, size, type, stride, offset) {
     if (!this.buffers.get(name))
       return;
@@ -4820,35 +4806,42 @@ var VBO = class {
     const attributeLocation = this.gl.getAttribLocation(program, attribute);
     this.gl.vertexAttribPointer(attributeLocation, size, type, false, stride, offset);
     this.gl.enableVertexAttribArray(attributeLocation);
-    this.unbindBuffer(name);
   }
-  /**
-   * Binds the specified buffer to the WebGL context.
-   * @param {string} name - The name of the buffer to bind.
-   */
   bindBuffer(name) {
     const buffer = this.buffers.get(name);
     if (!buffer)
       return;
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+    this.gl.bindBuffer(this.contextBase, buffer);
   }
-  /**
-   * Unbinds the specified buffer from the WebGL context.
-   * @param {string} name - The name of the buffer to unbind.
-   */
   unbindBuffer(name) {
     const buffer = this.buffers.get(name);
     if (!buffer)
       return;
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+    this.gl.bindBuffer(this.contextBase, null);
   }
-  /**
-  * Gets the buffer associated with the specified name.
-  * @param {string} name - The name of the buffer to retrieve.
-  * @returns {WebGLBuffer | undefined} The buffer associated with the specified name, if it exists.
-  */
   getBuffer(name) {
     return this.buffers.get(name);
+  }
+};
+
+// src/buffers/ColorBuffer.ts
+var ColorBuffer = class extends GLBuffer {
+  constructor(gl) {
+    super(gl, /* @__PURE__ */ new Map(), gl.ARRAY_BUFFER);
+  }
+};
+
+// src/buffers/IBO.ts
+var IBO = class extends GLBuffer {
+  constructor(gl) {
+    super(gl, /* @__PURE__ */ new Map(), gl.ELEMENT_ARRAY_BUFFER);
+  }
+};
+
+// src/buffers/VBO.ts
+var VBO = class extends GLBuffer {
+  constructor(gl) {
+    super(gl, /* @__PURE__ */ new Map(), gl.ARRAY_BUFFER);
   }
 };
 
@@ -4863,6 +4856,8 @@ var RenderSystem = class extends System {
     this.canvas = canvas;
     this.gl = canvas.gl;
     this.vbo = new VBO(this.gl);
+    this.ibo = new IBO(this.gl);
+    this.colorBuffer = new ColorBuffer(this.gl);
     this.entityManager = entityManager;
   }
   preload() {
@@ -4871,8 +4866,11 @@ var RenderSystem = class extends System {
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
         return;
-      this.vbo.createVertexBuffer(entity.id, renderComponent.vertexData);
+      this.vbo.createBuffer(entity.id, new Float32Array(renderComponent.vertices));
+      this.ibo.createBuffer(entity.id, new Uint16Array(renderComponent.indices));
+      this.colorBuffer.createBuffer(entity.id, new Float32Array(renderComponent.colors));
     });
+    this.canvas.setViewPort();
   }
   update() {
     const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
@@ -4880,40 +4878,50 @@ var RenderSystem = class extends System {
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
         return;
-      renderComponent.position[0] += 0.01;
-      renderComponent.position[1] += 0.01;
-      renderComponent.position[2] += 0.01;
     });
   }
   render() {
     this.canvas.clear();
-    this.canvas.setViewPort();
     const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
     entities.forEach((entity) => {
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
         return;
-      const buffer = this.vbo.getBuffer(entity.id);
-      if (!buffer)
-        return;
       const modelMatrix = import_gl_matrix.mat4.create();
       import_gl_matrix.mat4.translate(modelMatrix, modelMatrix, renderComponent.position);
       renderComponent.shaderProgram.setUniformMatrix4fv("uModelMatrix", modelMatrix);
-      this.vbo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "coordinates", 2, this.gl.FLOAT, 0, 0);
-      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+      this.vbo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "coordinates", 3, this.gl.FLOAT, 0, 0);
+      this.ibo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "coordinates", 3, this.gl.FLOAT, 0, 0);
+      this.colorBuffer.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "color", 3, this.gl.FLOAT, 0, 0);
+      this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
     });
   }
 };
 
 // src/main.ts
 var main = async () => {
-  const window = new WebGLCanvas(600, 400);
+  const window = new WebGLCanvas(400, 400);
   const entityManager = new EntityManager();
   const triangle = new Entity();
   const shaderProgram = new ShaderProgram(window.gl);
   await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
   const renderComponent = new RenderComponent(
-    [-0.5, 0.5, -0.5, -0.5, 0, -0.5],
+    [
+      -0.5,
+      0.5,
+      0,
+      -0.5,
+      -0.5,
+      0,
+      0.5,
+      -0.5,
+      0,
+      0.5,
+      0.5,
+      0
+    ],
+    [3, 2, 1, 3, 1, 0],
+    [0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1],
     [0, 0, 0],
     shaderProgram
   );

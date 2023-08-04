@@ -7,7 +7,7 @@ import { EntityManager } from "./entities/EntityManager";
 import { RenderSystem } from "./systems/RenderSystem";
 
 const main = async () => {
-  const window = new WebGLCanvas(600, 400);
+  const window = new WebGLCanvas(400, 400);
 
   const entityManager = new EntityManager();
 
@@ -17,7 +17,14 @@ const main = async () => {
   await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
 
   const renderComponent = new RenderComponent(
-    [-0.5, 0.5, -0.5, -0.5, 0.0, -0.5],
+    [
+      -0.5, 0.5, 0.0,
+      -0.5, -0.5, 0.0,
+      0.5, -0.5, 0.0,
+      0.5, 0.5, 0.0
+    ],
+    [3, 2, 1, 3, 1, 0],
+    [0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1,],
     [0, 0, 0],
     shaderProgram
   );

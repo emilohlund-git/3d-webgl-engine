@@ -4,7 +4,9 @@ import { Component } from "./Component";
 
 export class RenderComponent extends Component {
   constructor(
-    public vertexData: number[],
+    public vertices: number[],
+    public indices: number[],
+    public colors: number[],
     public position: vec3,
     readonly shaderProgram: ShaderProgram
   ) {
