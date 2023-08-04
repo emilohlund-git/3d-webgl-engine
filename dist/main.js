@@ -3307,7 +3307,7 @@ var require_quat = __commonJS({
     exports.setAxes = exports.sqlerp = exports.rotationTo = exports.equals = exports.exactEquals = exports.normalize = exports.sqrLen = exports.squaredLength = exports.len = exports.length = exports.lerp = exports.dot = exports.scale = exports.mul = exports.add = exports.set = exports.copy = exports.fromValues = exports.clone = void 0;
     var glMatrix = _interopRequireWildcard(require_common());
     var mat3 = _interopRequireWildcard(require_mat3());
-    var vec3 = _interopRequireWildcard(require_vec3());
+    var vec32 = _interopRequireWildcard(require_vec3());
     var vec4 = _interopRequireWildcard(require_vec4());
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
@@ -3601,16 +3601,16 @@ var require_quat = __commonJS({
     var equals = vec4.equals;
     exports.equals = equals;
     var rotationTo = function() {
-      var tmpvec3 = vec3.create();
-      var xUnitVec3 = vec3.fromValues(1, 0, 0);
-      var yUnitVec3 = vec3.fromValues(0, 1, 0);
+      var tmpvec3 = vec32.create();
+      var xUnitVec3 = vec32.fromValues(1, 0, 0);
+      var yUnitVec3 = vec32.fromValues(0, 1, 0);
       return function(out, a, b) {
-        var dot2 = vec3.dot(a, b);
+        var dot2 = vec32.dot(a, b);
         if (dot2 < -0.999999) {
-          vec3.cross(tmpvec3, xUnitVec3, a);
-          if (vec3.len(tmpvec3) < 1e-6)
-            vec3.cross(tmpvec3, yUnitVec3, a);
-          vec3.normalize(tmpvec3, tmpvec3);
+          vec32.cross(tmpvec3, xUnitVec3, a);
+          if (vec32.len(tmpvec3) < 1e-6)
+            vec32.cross(tmpvec3, yUnitVec3, a);
+          vec32.normalize(tmpvec3, tmpvec3);
           setAxisAngle(out, tmpvec3, Math.PI);
           return out;
         } else if (dot2 > 0.999999) {
@@ -3620,7 +3620,7 @@ var require_quat = __commonJS({
           out[3] = 1;
           return out;
         } else {
-          vec3.cross(tmpvec3, a, b);
+          vec32.cross(tmpvec3, a, b);
           out[0] = tmpvec3[0];
           out[1] = tmpvec3[1];
           out[2] = tmpvec3[2];
@@ -3714,7 +3714,7 @@ var require_quat2 = __commonJS({
     exports.sqrLen = exports.squaredLength = exports.len = exports.length = exports.dot = exports.mul = exports.setReal = exports.getReal = void 0;
     var glMatrix = _interopRequireWildcard(require_common());
     var quat = _interopRequireWildcard(require_quat());
-    var mat42 = _interopRequireWildcard(require_mat4());
+    var mat43 = _interopRequireWildcard(require_mat4());
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -3840,9 +3840,9 @@ var require_quat2 = __commonJS({
     }
     function fromMat4(out, a) {
       var outer = quat.create();
-      mat42.getRotation(outer, a);
+      mat43.getRotation(outer, a);
       var t = new glMatrix.ARRAY_TYPE(3);
-      mat42.getTranslation(t, a);
+      mat43.getTranslation(t, a);
       fromRotationTranslation(out, outer, t);
       return out;
     }
@@ -4494,16 +4494,16 @@ var require_cjs = __commonJS({
     exports.mat2d = mat2d;
     var mat3 = _interopRequireWildcard(require_mat3());
     exports.mat3 = mat3;
-    var mat42 = _interopRequireWildcard(require_mat4());
-    exports.mat4 = mat42;
+    var mat43 = _interopRequireWildcard(require_mat4());
+    exports.mat4 = mat43;
     var quat = _interopRequireWildcard(require_quat());
     exports.quat = quat;
     var quat2 = _interopRequireWildcard(require_quat2());
     exports.quat2 = quat2;
     var vec2 = _interopRequireWildcard(require_vec2());
     exports.vec2 = vec2;
-    var vec3 = _interopRequireWildcard(require_vec3());
-    exports.vec3 = vec3;
+    var vec32 = _interopRequireWildcard(require_vec3());
+    exports.vec3 = vec32;
     var vec4 = _interopRequireWildcard(require_vec4());
     exports.vec4 = vec4;
     function _getRequireWildcardCache(nodeInterop) {
@@ -4673,6 +4673,9 @@ var WebGLCanvas = class {
   }
 };
 
+// src/components/RenderComponent.ts
+var import_gl_matrix = __toESM(require_cjs());
+
 // src/utils.ts
 function* seedSequence() {
   let seed = Date.now();
@@ -4708,13 +4711,14 @@ var Component = class {
 
 // src/components/RenderComponent.ts
 var RenderComponent = class extends Component {
-  constructor(vertices, indices, colors, position, shaderProgram) {
+  constructor(vertices, indices, colors, position, shaderProgram, moveMatrix = import_gl_matrix.mat4.create()) {
     super("RenderComponent");
     this.vertices = vertices;
     this.indices = indices;
     this.colors = colors;
     this.position = position;
     this.shaderProgram = shaderProgram;
+    this.moveMatrix = moveMatrix;
   }
 };
 
@@ -4780,7 +4784,7 @@ var EntityManager = class {
 };
 
 // src/systems/RenderSystem.ts
-var import_gl_matrix = __toESM(require_cjs());
+var import_gl_matrix2 = __toESM(require_cjs());
 
 // src/buffers/Buffer.ts
 var GLBuffer = class {
@@ -4869,15 +4873,33 @@ var RenderSystem = class extends System {
       this.vbo.createBuffer(entity.id, new Float32Array(renderComponent.vertices));
       this.ibo.createBuffer(entity.id, new Uint16Array(renderComponent.indices));
       this.colorBuffer.createBuffer(entity.id, new Float32Array(renderComponent.colors));
+      this.vbo.bindBuffer(entity.id);
+      this.ibo.bindBuffer(entity.id);
     });
     this.canvas.setViewPort();
   }
-  update() {
+  update(deltaTime) {
     const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
     entities.forEach((entity) => {
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
         return;
+      const projectionMatrix = import_gl_matrix2.mat4.create();
+      import_gl_matrix2.mat4.perspective(projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
+      const viewMatrix = import_gl_matrix2.mat4.create();
+      import_gl_matrix2.mat4.rotateZ(renderComponent.moveMatrix, renderComponent.moveMatrix, 1e-3 * deltaTime);
+      import_gl_matrix2.mat4.rotateX(renderComponent.moveMatrix, renderComponent.moveMatrix, 1e-3 * deltaTime);
+      import_gl_matrix2.mat4.rotateY(renderComponent.moveMatrix, renderComponent.moveMatrix, 1e-3 * deltaTime);
+      viewMatrix[14] = viewMatrix[14] - 6;
+      renderComponent.shaderProgram.setUniformMatrix4fv("pMatrix", projectionMatrix);
+      renderComponent.shaderProgram.setUniformMatrix4fv("vMatrix", viewMatrix);
+      renderComponent.shaderProgram.setUniformMatrix4fv("mMatrix", renderComponent.moveMatrix);
+      const modelMatrix = import_gl_matrix2.mat4.create();
+      import_gl_matrix2.mat4.translate(modelMatrix, modelMatrix, renderComponent.position);
+      renderComponent.shaderProgram.setUniformMatrix4fv("uModelMatrix", modelMatrix);
+      this.vbo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "coordinates", 3, this.gl.FLOAT, 0, 0);
+      this.ibo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "coordinates", 3, this.gl.FLOAT, 0, 0);
+      this.colorBuffer.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "color", 3, this.gl.FLOAT, 0, 0);
     });
   }
   render() {
@@ -4887,12 +4909,6 @@ var RenderSystem = class extends System {
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
         return;
-      const modelMatrix = import_gl_matrix.mat4.create();
-      import_gl_matrix.mat4.translate(modelMatrix, modelMatrix, renderComponent.position);
-      renderComponent.shaderProgram.setUniformMatrix4fv("uModelMatrix", modelMatrix);
-      this.vbo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "coordinates", 3, this.gl.FLOAT, 0, 0);
-      this.ibo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "coordinates", 3, this.gl.FLOAT, 0, 0);
-      this.colorBuffer.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "color", 3, this.gl.FLOAT, 0, 0);
       this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
     });
   }
@@ -4907,21 +4923,191 @@ var main = async () => {
   await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
   const renderComponent = new RenderComponent(
     [
-      -0.5,
-      0.5,
+      -1,
+      -1,
+      -1,
+      1,
+      -1,
+      -1,
+      1,
+      1,
+      -1,
+      -1,
+      1,
+      -1,
+      -1,
+      -1,
+      1,
+      1,
+      -1,
+      1,
+      1,
+      1,
+      1,
+      -1,
+      1,
+      1,
+      -1,
+      -1,
+      -1,
+      -1,
+      1,
+      -1,
+      -1,
+      1,
+      1,
+      -1,
+      -1,
+      1,
+      1,
+      -1,
+      -1,
+      1,
+      1,
+      -1,
+      1,
+      1,
+      1,
+      1,
+      -1,
+      1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      1,
+      1,
+      -1,
+      1,
+      1,
+      -1,
+      -1,
+      -1,
+      1,
+      -1,
+      -1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      -1
+    ],
+    [
       0,
-      -0.5,
-      -0.5,
+      1,
+      2,
       0,
-      0.5,
-      -0.5,
+      2,
+      3,
+      4,
+      5,
+      6,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      8,
+      10,
+      11,
+      12,
+      13,
+      14,
+      12,
+      14,
+      15,
+      16,
+      17,
+      18,
+      16,
+      18,
+      19,
+      20,
+      21,
+      22,
+      20,
+      22,
+      23
+    ],
+    [
+      5,
+      3,
+      7,
+      5,
+      3,
+      7,
+      5,
+      3,
+      7,
+      5,
+      3,
+      7,
+      1,
+      1,
+      3,
+      1,
+      1,
+      3,
+      1,
+      1,
+      3,
+      1,
+      1,
+      3,
       0,
-      0.5,
-      0.5,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
       0
     ],
-    [3, 2, 1, 3, 1, 0],
-    [0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1],
     [0, 0, 0],
     shaderProgram
   );
