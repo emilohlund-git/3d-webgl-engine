@@ -4,6 +4,7 @@ import { ColorBuffer } from "../buffers/ColorBuffer";
 import { IBO } from "../buffers/IBO";
 import { VBO } from "../buffers/VBO";
 import { RenderComponent } from "../components/RenderComponent";
+import { TransformComponent } from "../components/TransformComponent";
 import { EntityManager } from "../entities/EntityManager";
 import { System } from "./System";
 
@@ -47,27 +48,25 @@ export class RenderSystem extends System {
     const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
     entities.forEach(entity => {
       const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");
-      if (!renderComponent) return;
+      const transformComponent = entity.getComponent<TransformComponent>("TransformComponent");
+      if (!renderComponent || !transformComponent) return;
+
+      const modelMatrix = transformComponent.getModelMatrix();
 
       const projectionMatrix = mat4.create();
       mat4.perspective(projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
 
       const viewMatrix = mat4.create();
 
-      mat4.rotateZ(renderComponent.moveMatrix, renderComponent.moveMatrix, 0.001 * deltaTime);
-      mat4.rotateX(renderComponent.moveMatrix, renderComponent.moveMatrix, 0.001 * deltaTime);
-      mat4.rotateY(renderComponent.moveMatrix, renderComponent.moveMatrix, 0.001 * deltaTime);
+      mat4.rotateZ(modelMatrix, modelMatrix, 0.001 * deltaTime);
+      mat4.rotateX(modelMatrix, modelMatrix, 0.001 * deltaTime);
+      mat4.rotateY(modelMatrix, modelMatrix, 0.001 * deltaTime);
 
       viewMatrix[14] = viewMatrix[14] - 6;
 
       renderComponent.shaderProgram.setUniformMatrix4fv("pMatrix", projectionMatrix);
       renderComponent.shaderProgram.setUniformMatrix4fv("vMatrix", viewMatrix);
-      renderComponent.shaderProgram.setUniformMatrix4fv("mMatrix", renderComponent.moveMatrix);
-
-      const modelMatrix = mat4.create();
-      mat4.translate(modelMatrix, modelMatrix, renderComponent.position);
-
-      renderComponent.shaderProgram.setUniformMatrix4fv("uModelMatrix", modelMatrix);
+      renderComponent.shaderProgram.setUniformMatrix4fv("mMatrix", modelMatrix);
 
       this.vbo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program!, "coordinates", 3, this.gl.FLOAT, 0, 0);
       this.ibo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program!, "coordinates", 3, this.gl.FLOAT, 0, 0);

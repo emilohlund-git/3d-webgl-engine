@@ -3307,7 +3307,7 @@ var require_quat = __commonJS({
     exports.setAxes = exports.sqlerp = exports.rotationTo = exports.equals = exports.exactEquals = exports.normalize = exports.sqrLen = exports.squaredLength = exports.len = exports.length = exports.lerp = exports.dot = exports.scale = exports.mul = exports.add = exports.set = exports.copy = exports.fromValues = exports.clone = void 0;
     var glMatrix = _interopRequireWildcard(require_common());
     var mat3 = _interopRequireWildcard(require_mat3());
-    var vec32 = _interopRequireWildcard(require_vec3());
+    var vec33 = _interopRequireWildcard(require_vec3());
     var vec4 = _interopRequireWildcard(require_vec4());
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
@@ -3601,16 +3601,16 @@ var require_quat = __commonJS({
     var equals = vec4.equals;
     exports.equals = equals;
     var rotationTo = function() {
-      var tmpvec3 = vec32.create();
-      var xUnitVec3 = vec32.fromValues(1, 0, 0);
-      var yUnitVec3 = vec32.fromValues(0, 1, 0);
+      var tmpvec3 = vec33.create();
+      var xUnitVec3 = vec33.fromValues(1, 0, 0);
+      var yUnitVec3 = vec33.fromValues(0, 1, 0);
       return function(out, a, b) {
-        var dot2 = vec32.dot(a, b);
+        var dot2 = vec33.dot(a, b);
         if (dot2 < -0.999999) {
-          vec32.cross(tmpvec3, xUnitVec3, a);
-          if (vec32.len(tmpvec3) < 1e-6)
-            vec32.cross(tmpvec3, yUnitVec3, a);
-          vec32.normalize(tmpvec3, tmpvec3);
+          vec33.cross(tmpvec3, xUnitVec3, a);
+          if (vec33.len(tmpvec3) < 1e-6)
+            vec33.cross(tmpvec3, yUnitVec3, a);
+          vec33.normalize(tmpvec3, tmpvec3);
           setAxisAngle(out, tmpvec3, Math.PI);
           return out;
         } else if (dot2 > 0.999999) {
@@ -3620,7 +3620,7 @@ var require_quat = __commonJS({
           out[3] = 1;
           return out;
         } else {
-          vec32.cross(tmpvec3, a, b);
+          vec33.cross(tmpvec3, a, b);
           out[0] = tmpvec3[0];
           out[1] = tmpvec3[1];
           out[2] = tmpvec3[2];
@@ -3714,7 +3714,7 @@ var require_quat2 = __commonJS({
     exports.sqrLen = exports.squaredLength = exports.len = exports.length = exports.dot = exports.mul = exports.setReal = exports.getReal = void 0;
     var glMatrix = _interopRequireWildcard(require_common());
     var quat = _interopRequireWildcard(require_quat());
-    var mat43 = _interopRequireWildcard(require_mat4());
+    var mat44 = _interopRequireWildcard(require_mat4());
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -3840,9 +3840,9 @@ var require_quat2 = __commonJS({
     }
     function fromMat4(out, a) {
       var outer = quat.create();
-      mat43.getRotation(outer, a);
+      mat44.getRotation(outer, a);
       var t = new glMatrix.ARRAY_TYPE(3);
-      mat43.getTranslation(t, a);
+      mat44.getTranslation(t, a);
       fromRotationTranslation(out, outer, t);
       return out;
     }
@@ -4494,16 +4494,16 @@ var require_cjs = __commonJS({
     exports.mat2d = mat2d;
     var mat3 = _interopRequireWildcard(require_mat3());
     exports.mat3 = mat3;
-    var mat43 = _interopRequireWildcard(require_mat4());
-    exports.mat4 = mat43;
+    var mat44 = _interopRequireWildcard(require_mat4());
+    exports.mat4 = mat44;
     var quat = _interopRequireWildcard(require_quat());
     exports.quat = quat;
     var quat2 = _interopRequireWildcard(require_quat2());
     exports.quat2 = quat2;
     var vec2 = _interopRequireWildcard(require_vec2());
     exports.vec2 = vec2;
-    var vec32 = _interopRequireWildcard(require_vec3());
-    exports.vec3 = vec32;
+    var vec33 = _interopRequireWildcard(require_vec3());
+    exports.vec3 = vec33;
     var vec4 = _interopRequireWildcard(require_vec4());
     exports.vec4 = vec4;
     function _getRequireWildcardCache(nodeInterop) {
@@ -4711,14 +4711,34 @@ var Component = class {
 
 // src/components/RenderComponent.ts
 var RenderComponent = class extends Component {
-  constructor(vertices, indices, colors, position, shaderProgram, moveMatrix = import_gl_matrix.mat4.create()) {
+  constructor(vertices, indices, colors, position, shaderProgram, modelMatrix = import_gl_matrix.mat4.create()) {
     super("RenderComponent");
     this.vertices = vertices;
     this.indices = indices;
     this.colors = colors;
     this.position = position;
     this.shaderProgram = shaderProgram;
-    this.moveMatrix = moveMatrix;
+    this.modelMatrix = modelMatrix;
+  }
+};
+
+// src/components/TransformComponent.ts
+var import_gl_matrix2 = __toESM(require_cjs());
+var TransformComponent = class extends Component {
+  constructor(position = import_gl_matrix2.vec3.create(), rotation = import_gl_matrix2.vec3.create(), scale = import_gl_matrix2.vec3.fromValues(1, 1, 1)) {
+    super("TransformComponent");
+    this.modelMatrix = import_gl_matrix2.mat4.create();
+    this.position = position;
+    this.rotation = rotation;
+    this.scale = scale;
+  }
+  getModelMatrix() {
+    import_gl_matrix2.mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
+    import_gl_matrix2.mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotation[0]);
+    import_gl_matrix2.mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotation[1]);
+    import_gl_matrix2.mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2]);
+    import_gl_matrix2.mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
+    return this.modelMatrix;
   }
 };
 
@@ -4784,7 +4804,7 @@ var EntityManager = class {
 };
 
 // src/systems/RenderSystem.ts
-var import_gl_matrix2 = __toESM(require_cjs());
+var import_gl_matrix3 = __toESM(require_cjs());
 
 // src/buffers/Buffer.ts
 var GLBuffer = class {
@@ -4882,21 +4902,20 @@ var RenderSystem = class extends System {
     const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
     entities.forEach((entity) => {
       const renderComponent = entity.getComponent("RenderComponent");
-      if (!renderComponent)
+      const transformComponent = entity.getComponent("TransformComponent");
+      if (!renderComponent || !transformComponent)
         return;
-      const projectionMatrix = import_gl_matrix2.mat4.create();
-      import_gl_matrix2.mat4.perspective(projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
-      const viewMatrix = import_gl_matrix2.mat4.create();
-      import_gl_matrix2.mat4.rotateZ(renderComponent.moveMatrix, renderComponent.moveMatrix, 1e-3 * deltaTime);
-      import_gl_matrix2.mat4.rotateX(renderComponent.moveMatrix, renderComponent.moveMatrix, 1e-3 * deltaTime);
-      import_gl_matrix2.mat4.rotateY(renderComponent.moveMatrix, renderComponent.moveMatrix, 1e-3 * deltaTime);
+      const modelMatrix = transformComponent.getModelMatrix();
+      const projectionMatrix = import_gl_matrix3.mat4.create();
+      import_gl_matrix3.mat4.perspective(projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
+      const viewMatrix = import_gl_matrix3.mat4.create();
+      import_gl_matrix3.mat4.rotateZ(modelMatrix, modelMatrix, 1e-3 * deltaTime);
+      import_gl_matrix3.mat4.rotateX(modelMatrix, modelMatrix, 1e-3 * deltaTime);
+      import_gl_matrix3.mat4.rotateY(modelMatrix, modelMatrix, 1e-3 * deltaTime);
       viewMatrix[14] = viewMatrix[14] - 6;
       renderComponent.shaderProgram.setUniformMatrix4fv("pMatrix", projectionMatrix);
       renderComponent.shaderProgram.setUniformMatrix4fv("vMatrix", viewMatrix);
-      renderComponent.shaderProgram.setUniformMatrix4fv("mMatrix", renderComponent.moveMatrix);
-      const modelMatrix = import_gl_matrix2.mat4.create();
-      import_gl_matrix2.mat4.translate(modelMatrix, modelMatrix, renderComponent.position);
-      renderComponent.shaderProgram.setUniformMatrix4fv("uModelMatrix", modelMatrix);
+      renderComponent.shaderProgram.setUniformMatrix4fv("mMatrix", modelMatrix);
       this.vbo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "coordinates", 3, this.gl.FLOAT, 0, 0);
       this.ibo.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "coordinates", 3, this.gl.FLOAT, 0, 0);
       this.colorBuffer.associateWithAttribute(entity.id, renderComponent.shaderProgram.program, "color", 3, this.gl.FLOAT, 0, 0);
@@ -5111,7 +5130,9 @@ var main = async () => {
     [0, 0, 0],
     shaderProgram
   );
+  const transformComponent = new TransformComponent();
   triangle.addComponent("RenderComponent", renderComponent);
+  triangle.addComponent("TransformComponent", transformComponent);
   entityManager.addEntity(triangle);
   const game = new Game(entityManager);
   const renderSystem = new RenderSystem(window, entityManager);

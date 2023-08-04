@@ -9,7 +9,7 @@ export class RenderComponent extends Component {
     public colors: number[],
     public position: vec3,
     readonly shaderProgram: ShaderProgram,
-    public moveMatrix: mat4 = mat4.create(),
+    public modelMatrix: mat4 = mat4.create(),
   ) {
     super("RenderComponent");
   }

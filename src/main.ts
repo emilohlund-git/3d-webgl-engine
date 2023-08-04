@@ -2,6 +2,7 @@ import { Game } from "./Game";
 import { ShaderProgram } from "./ShaderProgram";
 import { WebGLCanvas } from "./WebGLCanvas";
 import { RenderComponent } from "./components/RenderComponent";
+import { TransformComponent } from "./components/TransformComponent";
 import { Entity } from "./entities/Entity";
 import { EntityManager } from "./entities/EntityManager";
 import { RenderSystem } from "./systems/RenderSystem";
@@ -42,7 +43,10 @@ const main = async () => {
     shaderProgram
   );
 
+  const transformComponent = new TransformComponent();
+
   triangle.addComponent("RenderComponent", renderComponent);
+  triangle.addComponent("TransformComponent", transformComponent);
 
   entityManager.addEntity(triangle);
 
