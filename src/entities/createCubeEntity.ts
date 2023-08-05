@@ -1,4 +1,6 @@
+import { vec3 } from "gl-matrix";
 import { ShaderProgram } from "../ShaderProgram";
+import { LightingComponent } from "../components/LightingComponent";
 import { RenderComponent } from "../components/RenderComponent";
 import { TransformComponent } from "../components/TransformComponent";
 import { Entity } from "./Entity";
@@ -37,11 +39,18 @@ export async function createCubeEntity(webGLContext: WebGL2RenderingContext): Pr
     vertices,
     indices,
     colors,
+    [],
     shaderProgram
   );
 
+  const lightingComponent = new LightingComponent(
+    vec3.fromValues(1.0, 1.0, 1.0),
+    .2
+  )
+
   cube.addComponent("RenderComponent", renderComponent);
-  cube.addComponent("TransformComponent", new TransformComponent());
+  cube.addComponent("LightingComponent", lightingComponent);
+  cube.addComponent("TransformComponent", new TransformComponent(vec3.fromValues(0, 0.035, 0)));
 
   return cube;
 }

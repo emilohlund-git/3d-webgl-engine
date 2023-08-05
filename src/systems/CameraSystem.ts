@@ -28,7 +28,7 @@ export class CameraSystem extends System {
 
     this.inputManager = new InputManager();
     this.moveSpeed = moveSpeed;
-    this.camera = new OrbitCamera(vec3.create(), quat.create());
+    this.camera = new OrbitCamera(vec3.fromValues(0, 0, -5), quat.create());
     this.mouseSensitivity = mouseSensitivity;
     this.projectionMatrix = projectionMatrix;
     this.canvas = canvas;

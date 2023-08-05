@@ -6,8 +6,10 @@ import { EntityManager } from "./entities/EntityManager";
 import { createCubeEntity } from "./entities/createCubeEntity";
 import { createTerrainEntity } from "./entities/createTerrainEntity";
 import { CameraSystem } from "./systems/CameraSystem";
+import { LightingSystem } from "./systems/LightingSystem";
 import { RenderSystem } from "./systems/RenderSystem";
 import { TransformSystem } from "./systems/TransformSystem";
+import { TerrainUtils } from "./utils/TerrainUtils";
 
 const main = async () => {
   try {
@@ -15,12 +17,7 @@ const main = async () => {
 
     const entityManager = new EntityManager();
 
-    const heightmap = [
-      [0.1, 0.2, 0.3, 0.2],
-      [0.2, 0.3, 0.5, 0.4],
-      [0.3, 0.5, 0.7, 0.6],
-      [0.2, 0.4, 0.6, 0.4]
-    ];
+    const heightmap = TerrainUtils.generateHeightMap(100, 100, 0.02, 1.0, 42);
 
     const terrain = await createTerrainEntity(window.gl, heightmap);
     const cube = await createCubeEntity(window.gl);
@@ -29,11 +26,12 @@ const main = async () => {
     const game = new Game(entityManager);
 
     const bufferManager = new BufferManager(window.gl)
-    const renderSystem = new RenderSystem(window, entityManager, bufferManager);
-    const transformSystem = new TransformSystem(window, bufferManager);
+    const renderSystem = new RenderSystem(window, bufferManager);
+    const transformSystem = new TransformSystem();
     const cameraSystem = new CameraSystem(0.001, mat4.create(), window, 0.1);
+    const lightingSystem = new LightingSystem();
 
-    game.addSystems([cameraSystem, transformSystem, renderSystem]);
+    game.addSystems([cameraSystem, transformSystem, lightingSystem, renderSystem]);
     game.run();
   } catch (error) {
     console.error(`Error creating entities: ${error}`)

@@ -1,13 +1,14 @@
 #version 300 es
-precision highp float;
 
-// Input variables
-in vec3 vColor; // Vertex color
+precision mediump float;
 
-// Output
-out vec4 fragColor;
+// Input from vertex shader
+in vec3 vColor;
+
+// Output to the frame buffer
+out vec4 outColor;
 
 void main() {
-  // Use the vertex color as the fragment color
-    fragColor = vec4(vColor, 1.0f);
+  // Simply use the color computed in the vertex shader
+  outColor = vec4(vColor, 1.0f);
 }

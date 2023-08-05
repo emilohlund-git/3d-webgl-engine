@@ -1,6 +1,6 @@
 import { Entity } from "./Entity";
 
-export type ComponentName = "RenderComponent" | "TransformComponent";
+export type ComponentName = "RenderComponent" | "TransformComponent" | "LightingComponent";
 
 export class EntityManager {
   private entities = <Entity[]>[];
