@@ -1,11 +1,15 @@
+import { mat4 } from "gl-matrix";
 import { Game } from "./Game";
+import { InputManager } from "./InputManager";
 import { ShaderProgram } from "./ShaderProgram";
 import { WebGLCanvas } from "./WebGLCanvas";
 import { BufferManager } from "./buffers/BufferManager";
+import { CameraComponent } from "./components/CameraComponent";
 import { RenderComponent } from "./components/RenderComponent";
 import { TransformComponent } from "./components/TransformComponent";
 import { Entity } from "./entities/Entity";
 import { EntityManager } from "./entities/EntityManager";
+import { CameraSystem } from "./systems/CameraSystem";
 import { RenderSystem } from "./systems/RenderSystem";
 import { TransformSystem } from "./systems/TransformSystem";
 
@@ -45,21 +49,26 @@ const main = async () => {
     shaderProgram
   );
 
-  const transformComponent = new TransformComponent();
-
   cube.addComponent("RenderComponent", renderComponent);
-  cube.addComponent("TransformComponent", transformComponent);
+  cube.addComponent("TransformComponent", new TransformComponent());
 
-  entityManager.addEntity(cube);
+  const camera = new Entity();
+  camera.addComponent("CameraComponent", new CameraComponent());
+  camera.addComponent("TransformComponent", new TransformComponent())
+
+  entityManager.addEntities([cube, camera])
 
   const game = new Game(entityManager);
 
   const bufferManager = new BufferManager(window.gl)
+  const inputManager = new InputManager();
   const renderSystem = new RenderSystem(window, entityManager, bufferManager);
-  const transformSystem = new TransformSystem(window, entityManager, bufferManager);
+  const transformSystem = new TransformSystem(window, entityManager, bufferManager, mat4.create());
+  const cameraSystem = new CameraSystem(entityManager, inputManager, 0.001, 0.1);
 
   game.addSystem(renderSystem);
   game.addSystem(transformSystem);
+  game.addSystem(cameraSystem);
   game.run();
 };
 

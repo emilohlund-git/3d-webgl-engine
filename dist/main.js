@@ -3307,7 +3307,7 @@ var require_quat = __commonJS({
     exports.setAxes = exports.sqlerp = exports.rotationTo = exports.equals = exports.exactEquals = exports.normalize = exports.sqrLen = exports.squaredLength = exports.len = exports.length = exports.lerp = exports.dot = exports.scale = exports.mul = exports.add = exports.set = exports.copy = exports.fromValues = exports.clone = void 0;
     var glMatrix = _interopRequireWildcard(require_common());
     var mat3 = _interopRequireWildcard(require_mat3());
-    var vec33 = _interopRequireWildcard(require_vec3());
+    var vec35 = _interopRequireWildcard(require_vec3());
     var vec4 = _interopRequireWildcard(require_vec4());
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
@@ -3601,16 +3601,16 @@ var require_quat = __commonJS({
     var equals = vec4.equals;
     exports.equals = equals;
     var rotationTo = function() {
-      var tmpvec3 = vec33.create();
-      var xUnitVec3 = vec33.fromValues(1, 0, 0);
-      var yUnitVec3 = vec33.fromValues(0, 1, 0);
+      var tmpvec3 = vec35.create();
+      var xUnitVec3 = vec35.fromValues(1, 0, 0);
+      var yUnitVec3 = vec35.fromValues(0, 1, 0);
       return function(out, a, b) {
-        var dot2 = vec33.dot(a, b);
+        var dot2 = vec35.dot(a, b);
         if (dot2 < -0.999999) {
-          vec33.cross(tmpvec3, xUnitVec3, a);
-          if (vec33.len(tmpvec3) < 1e-6)
-            vec33.cross(tmpvec3, yUnitVec3, a);
-          vec33.normalize(tmpvec3, tmpvec3);
+          vec35.cross(tmpvec3, xUnitVec3, a);
+          if (vec35.len(tmpvec3) < 1e-6)
+            vec35.cross(tmpvec3, yUnitVec3, a);
+          vec35.normalize(tmpvec3, tmpvec3);
           setAxisAngle(out, tmpvec3, Math.PI);
           return out;
         } else if (dot2 > 0.999999) {
@@ -3620,7 +3620,7 @@ var require_quat = __commonJS({
           out[3] = 1;
           return out;
         } else {
-          vec33.cross(tmpvec3, a, b);
+          vec35.cross(tmpvec3, a, b);
           out[0] = tmpvec3[0];
           out[1] = tmpvec3[1];
           out[2] = tmpvec3[2];
@@ -3713,8 +3713,8 @@ var require_quat2 = __commonJS({
     exports.equals = equals;
     exports.sqrLen = exports.squaredLength = exports.len = exports.length = exports.dot = exports.mul = exports.setReal = exports.getReal = void 0;
     var glMatrix = _interopRequireWildcard(require_common());
-    var quat = _interopRequireWildcard(require_quat());
-    var mat44 = _interopRequireWildcard(require_mat4());
+    var quat4 = _interopRequireWildcard(require_quat());
+    var mat46 = _interopRequireWildcard(require_mat4());
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -3839,10 +3839,10 @@ var require_quat2 = __commonJS({
       return out;
     }
     function fromMat4(out, a) {
-      var outer = quat.create();
-      mat44.getRotation(outer, a);
+      var outer = quat4.create();
+      mat46.getRotation(outer, a);
       var t = new glMatrix.ARRAY_TYPE(3);
-      mat44.getTranslation(t, a);
+      mat46.getTranslation(t, a);
       fromRotationTranslation(out, outer, t);
       return out;
     }
@@ -3879,7 +3879,7 @@ var require_quat2 = __commonJS({
       out[7] = w2;
       return out;
     }
-    var getReal = quat.copy;
+    var getReal = quat4.copy;
     exports.getReal = getReal;
     function getDual(out, a) {
       out[0] = a[4];
@@ -3888,7 +3888,7 @@ var require_quat2 = __commonJS({
       out[3] = a[7];
       return out;
     }
-    var setReal = quat.copy;
+    var setReal = quat4.copy;
     exports.setReal = setReal;
     function setDual(out, q) {
       out[4] = q[0];
@@ -3918,7 +3918,7 @@ var require_quat2 = __commonJS({
     }
     function rotateX(out, a, rad) {
       var bx = -a[0], by = -a[1], bz = -a[2], bw = a[3], ax = a[4], ay = a[5], az = a[6], aw = a[7], ax1 = ax * bw + aw * bx + ay * bz - az * by, ay1 = ay * bw + aw * by + az * bx - ax * bz, az1 = az * bw + aw * bz + ax * by - ay * bx, aw1 = aw * bw - ax * bx - ay * by - az * bz;
-      quat.rotateX(out, a, rad);
+      quat4.rotateX(out, a, rad);
       bx = out[0];
       by = out[1];
       bz = out[2];
@@ -3931,7 +3931,7 @@ var require_quat2 = __commonJS({
     }
     function rotateY(out, a, rad) {
       var bx = -a[0], by = -a[1], bz = -a[2], bw = a[3], ax = a[4], ay = a[5], az = a[6], aw = a[7], ax1 = ax * bw + aw * bx + ay * bz - az * by, ay1 = ay * bw + aw * by + az * bx - ax * bz, az1 = az * bw + aw * bz + ax * by - ay * bx, aw1 = aw * bw - ax * bx - ay * by - az * bz;
-      quat.rotateY(out, a, rad);
+      quat4.rotateY(out, a, rad);
       bx = out[0];
       by = out[1];
       bz = out[2];
@@ -3944,7 +3944,7 @@ var require_quat2 = __commonJS({
     }
     function rotateZ(out, a, rad) {
       var bx = -a[0], by = -a[1], bz = -a[2], bw = a[3], ax = a[4], ay = a[5], az = a[6], aw = a[7], ax1 = ax * bw + aw * bx + ay * bz - az * by, ay1 = ay * bw + aw * by + az * bx - ax * bz, az1 = az * bw + aw * bz + ax * by - ay * bx, aw1 = aw * bw - ax * bx - ay * by - az * bz;
-      quat.rotateZ(out, a, rad);
+      quat4.rotateZ(out, a, rad);
       bx = out[0];
       by = out[1];
       bz = out[2];
@@ -4046,7 +4046,7 @@ var require_quat2 = __commonJS({
       out[7] = a[7] * b;
       return out;
     }
-    var dot = quat.dot;
+    var dot = quat4.dot;
     exports.dot = dot;
     function lerp(out, a, b, t) {
       var mt = 1 - t;
@@ -4085,11 +4085,11 @@ var require_quat2 = __commonJS({
       out[7] = a[7];
       return out;
     }
-    var length = quat.length;
+    var length = quat4.length;
     exports.length = length;
     var len = length;
     exports.len = len;
-    var squaredLength = quat.squaredLength;
+    var squaredLength = quat4.squaredLength;
     exports.squaredLength = squaredLength;
     var sqrLen = squaredLength;
     exports.sqrLen = sqrLen;
@@ -4494,16 +4494,16 @@ var require_cjs = __commonJS({
     exports.mat2d = mat2d;
     var mat3 = _interopRequireWildcard(require_mat3());
     exports.mat3 = mat3;
-    var mat44 = _interopRequireWildcard(require_mat4());
-    exports.mat4 = mat44;
-    var quat = _interopRequireWildcard(require_quat());
-    exports.quat = quat;
-    var quat2 = _interopRequireWildcard(require_quat2());
-    exports.quat2 = quat2;
+    var mat46 = _interopRequireWildcard(require_mat4());
+    exports.mat4 = mat46;
+    var quat4 = _interopRequireWildcard(require_quat());
+    exports.quat = quat4;
+    var quat22 = _interopRequireWildcard(require_quat2());
+    exports.quat2 = quat22;
     var vec2 = _interopRequireWildcard(require_vec2());
     exports.vec2 = vec2;
-    var vec33 = _interopRequireWildcard(require_vec3());
-    exports.vec3 = vec33;
+    var vec35 = _interopRequireWildcard(require_vec3());
+    exports.vec3 = vec35;
     var vec4 = _interopRequireWildcard(require_vec4());
     exports.vec4 = vec4;
     function _getRequireWildcardCache(nodeInterop) {
@@ -4547,6 +4547,9 @@ var require_cjs = __commonJS({
   }
 });
 
+// src/main.ts
+var import_gl_matrix6 = __toESM(require_cjs());
+
 // src/Game.ts
 var Game = class {
   constructor(entityManager) {
@@ -4583,6 +4586,49 @@ var Game = class {
       system.preload();
     }
     this.gameLoop();
+  }
+};
+
+// src/InputManager.ts
+var InputManager = class {
+  constructor() {
+    this.keysPressed = {};
+    this.mouseButtonsPressed = {};
+    this.mouseX = 0;
+    this.mouseY = 0;
+    document.addEventListener("keydown", (event) => this.handleKeyDown(event));
+    document.addEventListener("keyup", (event) => this.handleKeyUp(event));
+    document.addEventListener("mousedown", (event) => this.handleMouseDown(event));
+    document.addEventListener("mouseup", (event) => this.handleMouseUp(event));
+    document.addEventListener("mousemove", (event) => this.handleMouseMove(event));
+  }
+  handleKeyDown(event) {
+    this.keysPressed[event.key] = true;
+  }
+  handleKeyUp(event) {
+    this.keysPressed[event.key] = false;
+  }
+  handleMouseDown(event) {
+    this.mouseButtonsPressed[event.button] = true;
+  }
+  handleMouseUp(event) {
+    this.mouseButtonsPressed[event.button] = false;
+  }
+  handleMouseMove(event) {
+    this.mouseX = event.clientX;
+    this.mouseY = event.clientY;
+  }
+  isMouseButtonDown(button) {
+    return this.mouseButtonsPressed[button] || false;
+  }
+  getMouseX() {
+    return this.mouseX;
+  }
+  getMouseY() {
+    return this.mouseY;
+  }
+  isKeyPressed(key) {
+    return !!this.keysPressed[key];
   }
 };
 
@@ -4786,7 +4832,7 @@ var BufferManager = class {
   }
 };
 
-// src/components/RenderComponent.ts
+// src/components/CameraComponent.ts
 var import_gl_matrix = __toESM(require_cjs());
 
 // src/utils.ts
@@ -4822,9 +4868,23 @@ var Component = class {
   }
 };
 
+// src/components/CameraComponent.ts
+var CameraComponent = class extends Component {
+  constructor(position = import_gl_matrix.vec3.fromValues(0, 0, -5), rotation = import_gl_matrix.quat.create(), fov = 45, aspectRatio = 0.1, nearClip = 0.1, farClip = 100) {
+    super("CameraComponent");
+    this.position = position;
+    this.rotation = rotation;
+    this.fov = fov;
+    this.aspectRatio = aspectRatio;
+    this.nearClip = nearClip;
+    this.farClip = farClip;
+  }
+};
+
 // src/components/RenderComponent.ts
+var import_gl_matrix2 = __toESM(require_cjs());
 var RenderComponent = class extends Component {
-  constructor(vertices, indices, colors, position, shaderProgram, modelMatrix = import_gl_matrix.mat4.create()) {
+  constructor(vertices, indices, colors, position, shaderProgram, modelMatrix = import_gl_matrix2.mat4.create()) {
     super("RenderComponent");
     this.vertices = vertices;
     this.indices = indices;
@@ -4836,22 +4896,63 @@ var RenderComponent = class extends Component {
 };
 
 // src/components/TransformComponent.ts
-var import_gl_matrix2 = __toESM(require_cjs());
+var import_gl_matrix3 = __toESM(require_cjs());
 var TransformComponent = class extends Component {
-  constructor(position = import_gl_matrix2.vec3.create(), rotation = import_gl_matrix2.vec3.create(), scale = import_gl_matrix2.vec3.fromValues(1, 1, 1)) {
+  constructor(position = import_gl_matrix3.vec3.create(), rotation = import_gl_matrix3.quat.create(), scale = import_gl_matrix3.vec3.fromValues(1, 1, 1)) {
     super("TransformComponent");
-    this.modelMatrix = import_gl_matrix2.mat4.create();
+    this.modelMatrix = import_gl_matrix3.mat4.create();
     this.position = position;
     this.rotation = rotation;
     this.scale = scale;
   }
   getModelMatrix() {
-    import_gl_matrix2.mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
-    import_gl_matrix2.mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotation[0]);
-    import_gl_matrix2.mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotation[1]);
-    import_gl_matrix2.mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2]);
-    import_gl_matrix2.mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
+    import_gl_matrix3.mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
+    import_gl_matrix3.mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotation[0]);
+    import_gl_matrix3.mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotation[1]);
+    import_gl_matrix3.mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2]);
+    import_gl_matrix3.mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
     return this.modelMatrix;
+  }
+  moveForward(distance) {
+    const forward = import_gl_matrix3.vec3.fromValues(0, 0, 1);
+    import_gl_matrix3.vec3.transformQuat(forward, forward, this.rotation);
+    import_gl_matrix3.vec3.scaleAndAdd(this.position, this.position, forward, distance);
+  }
+  moveBackward(distance) {
+    const backward = import_gl_matrix3.vec3.fromValues(0, 0, -1);
+    import_gl_matrix3.vec3.transformQuat(backward, backward, this.rotation);
+    import_gl_matrix3.vec3.scaleAndAdd(this.position, this.position, backward, distance);
+  }
+  moveLeft(distance) {
+    const left = import_gl_matrix3.vec3.fromValues(1, 0, 0);
+    import_gl_matrix3.vec3.transformQuat(left, left, this.rotation);
+    import_gl_matrix3.vec3.scaleAndAdd(this.position, this.position, left, distance);
+  }
+  moveRight(distance) {
+    const right = import_gl_matrix3.vec3.fromValues(-1, 0, 0);
+    import_gl_matrix3.vec3.transformQuat(right, right, this.rotation);
+    import_gl_matrix3.vec3.scaleAndAdd(this.position, this.position, right, distance);
+  }
+  rotateX(angle) {
+    import_gl_matrix3.quat.rotateX(this.rotation, this.rotation, angle);
+  }
+  rotateY(angle) {
+    import_gl_matrix3.quat.rotateY(this.rotation, this.rotation, angle);
+  }
+  rotateZ(angle) {
+    import_gl_matrix3.quat.rotateZ(this.rotation, this.rotation, angle);
+  }
+  getRotationQuat() {
+    const quatX = import_gl_matrix3.quat.create();
+    const quatY = import_gl_matrix3.quat.create();
+    const quatZ = import_gl_matrix3.quat.create();
+    import_gl_matrix3.quat.setAxisAngle(quatX, [1, 0, 0], this.rotation[0]);
+    import_gl_matrix3.quat.setAxisAngle(quatY, [0, 1, 0], this.rotation[1]);
+    import_gl_matrix3.quat.setAxisAngle(quatZ, [0, 0, 1], this.rotation[2]);
+    const resultQuat = import_gl_matrix3.quat.create();
+    import_gl_matrix3.quat.multiply(resultQuat, quatY, quatX);
+    import_gl_matrix3.quat.multiply(resultQuat, quatZ, resultQuat);
+    return resultQuat;
   }
 };
 
@@ -4916,8 +5017,104 @@ var EntityManager = class {
   }
 };
 
+// src/systems/CameraSystem.ts
+var import_gl_matrix4 = __toESM(require_cjs());
+
 // src/systems/System.ts
 var System = class {
+};
+
+// src/systems/CameraSystem.ts
+var CameraSystem = class extends System {
+  constructor(entityManager, inputManager, mouseSensitivity, moveSpeed = 0.1) {
+    super();
+    // Vector to represent camera position
+    this.prevMouseX = 0;
+    this.prevMouseY = 0;
+    this.viewMatrix = import_gl_matrix4.mat4.create();
+    this.entityManager = entityManager;
+    this.inputManager = inputManager;
+    this.moveSpeed = moveSpeed;
+    this.mouseSensitivity = mouseSensitivity;
+    this.cameraOrientation = import_gl_matrix4.quat.create();
+    this.cameraPosition = import_gl_matrix4.vec3.create();
+  }
+  preload() {
+  }
+  update() {
+    const tempViewMatrix = import_gl_matrix4.mat4.clone(this.viewMatrix);
+    const cameraEntity = this.entityManager.getEntitiesByComponent("CameraComponent")[0];
+    if (cameraEntity) {
+      this.handleInput(cameraEntity);
+      const cameraTransform = cameraEntity.getComponent("TransformComponent");
+      const cameraComponent = cameraEntity.getComponent("CameraComponent");
+      if (cameraTransform && cameraComponent) {
+        import_gl_matrix4.mat4.identity(tempViewMatrix);
+        const inverseCameraPosition = import_gl_matrix4.vec3.create();
+        import_gl_matrix4.vec3.negate(inverseCameraPosition, this.cameraPosition);
+        import_gl_matrix4.mat4.translate(tempViewMatrix, tempViewMatrix, inverseCameraPosition);
+        const cameraRotationMat = import_gl_matrix4.mat4.create();
+        import_gl_matrix4.mat4.fromQuat(cameraRotationMat, this.cameraOrientation);
+        import_gl_matrix4.mat4.multiply(tempViewMatrix, tempViewMatrix, cameraRotationMat);
+        import_gl_matrix4.mat4.invert(tempViewMatrix, tempViewMatrix);
+      }
+    }
+    this.viewMatrix = tempViewMatrix;
+  }
+  render() {
+    const renderEntities = this.entityManager.getEntitiesByComponent("RenderComponent");
+    for (const entity of renderEntities) {
+      const renderComponent = entity.getComponent("RenderComponent");
+      if (!renderComponent)
+        continue;
+      this.setMatrixUniforms(renderComponent.shaderProgram);
+    }
+  }
+  handleInput(cameraEntity) {
+    const transformComponent = cameraEntity.getComponent("TransformComponent");
+    if (!transformComponent)
+      return;
+    const right = this.getRightVector();
+    const moveAmount = this.moveSpeed * (this.inputManager.isKeyPressed("Shift") ? 3 : 1);
+    if (this.inputManager.isKeyPressed("w")) {
+      const forwardDirection = import_gl_matrix4.vec3.transformQuat(import_gl_matrix4.vec3.create(), import_gl_matrix4.vec3.fromValues(0, 0, -1), this.cameraOrientation);
+      import_gl_matrix4.vec3.normalize(forwardDirection, forwardDirection);
+      import_gl_matrix4.vec3.scaleAndAdd(this.cameraPosition, this.cameraPosition, forwardDirection, -moveAmount);
+    } else if (this.inputManager.isKeyPressed("s")) {
+      const backwardDirection = import_gl_matrix4.vec3.transformQuat(import_gl_matrix4.vec3.create(), import_gl_matrix4.vec3.fromValues(0, 0, 1), this.cameraOrientation);
+      import_gl_matrix4.vec3.normalize(backwardDirection, backwardDirection);
+      import_gl_matrix4.vec3.scaleAndAdd(this.cameraPosition, this.cameraPosition, backwardDirection, -moveAmount);
+    }
+    if (this.inputManager.isKeyPressed("a")) {
+      import_gl_matrix4.vec3.scaleAndAdd(this.cameraPosition, this.cameraPosition, right, moveAmount);
+    } else if (this.inputManager.isKeyPressed("d")) {
+      import_gl_matrix4.vec3.scaleAndAdd(this.cameraPosition, this.cameraPosition, right, -moveAmount);
+    }
+    import_gl_matrix4.vec3.copy(transformComponent.position, this.cameraPosition);
+    if (this.inputManager.isMouseButtonDown(0)) {
+      const deltaX = (this.inputManager.getMouseX() - this.prevMouseX) * this.mouseSensitivity;
+      const deltaY = (this.inputManager.getMouseY() - this.prevMouseY) * this.mouseSensitivity;
+      this.rotateCamera(-deltaY, -deltaX);
+    }
+    this.prevMouseX = this.inputManager.getMouseX();
+    this.prevMouseY = this.inputManager.getMouseY();
+  }
+  rotateCamera(pitch, yaw) {
+    const pitchQuat = import_gl_matrix4.quat.create();
+    import_gl_matrix4.quat.setAxisAngle(pitchQuat, [1, 0, 0], pitch);
+    const yawQuat = import_gl_matrix4.quat.create();
+    import_gl_matrix4.quat.setAxisAngle(yawQuat, [0, 1, 0], yaw);
+    import_gl_matrix4.quat.multiply(this.cameraOrientation, pitchQuat, this.cameraOrientation);
+    import_gl_matrix4.quat.multiply(this.cameraOrientation, this.cameraOrientation, yawQuat);
+    import_gl_matrix4.quat.normalize(this.cameraOrientation, this.cameraOrientation);
+  }
+  getRightVector() {
+    const right = import_gl_matrix4.vec3.fromValues(1, 0, 0);
+    return import_gl_matrix4.vec3.transformQuat(import_gl_matrix4.vec3.create(), right, this.cameraOrientation);
+  }
+  setMatrixUniforms(shaderProgram) {
+    shaderProgram.setUniformMatrix4fv("vMatrix", this.viewMatrix);
+  }
 };
 
 // src/systems/RenderSystem.ts
@@ -4950,7 +5147,7 @@ var RenderSystem = class extends System {
     for (const entity of entities) {
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
-        return;
+        continue;
       this.bufferManager.createVBO(entity.id, new Float32Array(renderComponent.vertices));
       this.bufferManager.createIBO(entity.id, new Uint16Array(renderComponent.indices));
       this.bufferManager.createColorBuffer(entity.id, new Float32Array(renderComponent.colors));
@@ -4961,41 +5158,45 @@ var RenderSystem = class extends System {
 };
 
 // src/systems/TransformSystem.ts
-var import_gl_matrix3 = __toESM(require_cjs());
+var import_gl_matrix5 = __toESM(require_cjs());
 var TransformSystem = class extends System {
-  constructor(canvas, entityManager, bufferManager) {
+  constructor(canvas, entityManager, bufferManager, projectionMatrix) {
     super();
     this.canvas = canvas;
     this.gl = canvas.gl;
     this.bufferManager = bufferManager;
     this.entityManager = entityManager;
+    this.projectionMatrix = projectionMatrix;
   }
   preload() {
+    import_gl_matrix5.mat4.perspective(this.projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
   }
   update(deltaTime) {
-    const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
-    entities.forEach((entity) => {
-      const renderComponent = entity.getComponent("RenderComponent");
+    const entities = this.entityManager.getEntitiesByComponents(["TransformComponent", "RenderComponent"]);
+    for (const entity of entities) {
       const transformComponent = entity.getComponent("TransformComponent");
-      if (!renderComponent || !transformComponent)
-        return;
+      if (!transformComponent)
+        continue;
       const modelMatrix = transformComponent.getModelMatrix();
-      const projectionMatrix = import_gl_matrix3.mat4.create();
-      import_gl_matrix3.mat4.perspective(projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
-      const viewMatrix = import_gl_matrix3.mat4.create();
-      import_gl_matrix3.mat4.rotateZ(modelMatrix, modelMatrix, 1e-3 * deltaTime);
-      import_gl_matrix3.mat4.rotateX(modelMatrix, modelMatrix, 1e-3 * deltaTime);
-      import_gl_matrix3.mat4.rotateY(modelMatrix, modelMatrix, 1e-3 * deltaTime);
-      viewMatrix[14] = viewMatrix[14] - 6;
-      renderComponent.shaderProgram.setUniformMatrix4fv("pMatrix", projectionMatrix);
-      renderComponent.shaderProgram.setUniformMatrix4fv("vMatrix", viewMatrix);
-      renderComponent.shaderProgram.setUniformMatrix4fv("mMatrix", modelMatrix);
-      this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "coordinates", 3, this.gl.FLOAT, 0, 0);
-      this.bufferManager.associateIBOWithAttribute(entity.id, renderComponent.shaderProgram, "coordinates", 3, this.gl.FLOAT, 0, 0);
-      this.bufferManager.associateColorBufferWithAttribute(entity.id, renderComponent.shaderProgram, "color", 3, this.gl.FLOAT, 0, 0);
-    });
+      import_gl_matrix5.mat4.rotateZ(modelMatrix, modelMatrix, 1e-3 * deltaTime);
+      import_gl_matrix5.mat4.rotateX(modelMatrix, modelMatrix, 1e-3 * deltaTime);
+      import_gl_matrix5.mat4.rotateY(modelMatrix, modelMatrix, 1e-3 * deltaTime);
+      const renderComponent = entity.getComponent("RenderComponent");
+      if (!renderComponent)
+        continue;
+      const shaderProgram = renderComponent.shaderProgram;
+      this.setMatrixUniforms(shaderProgram, modelMatrix);
+      this.bufferManager.associateVBOWithAttribute(entity.id, shaderProgram, "coordinates", 3, this.gl.FLOAT, 0, 0);
+      this.bufferManager.associateIBOWithAttribute(entity.id, shaderProgram, "coordinates", 3, this.gl.FLOAT, 0, 0);
+      this.bufferManager.associateColorBufferWithAttribute(entity.id, shaderProgram, "color", 3, this.gl.FLOAT, 0, 0);
+    }
+    ;
   }
   render() {
+  }
+  setMatrixUniforms(shaderProgram, modelMatrix) {
+    shaderProgram.setUniformMatrix4fv("pMatrix", this.projectionMatrix);
+    shaderProgram.setUniformMatrix4fv("mMatrix", modelMatrix);
   }
 };
 
@@ -5196,16 +5397,21 @@ var main = async () => {
     [0, 0, 0],
     shaderProgram
   );
-  const transformComponent = new TransformComponent();
   cube.addComponent("RenderComponent", renderComponent);
-  cube.addComponent("TransformComponent", transformComponent);
-  entityManager.addEntity(cube);
+  cube.addComponent("TransformComponent", new TransformComponent());
+  const camera = new Entity();
+  camera.addComponent("CameraComponent", new CameraComponent());
+  camera.addComponent("TransformComponent", new TransformComponent());
+  entityManager.addEntities([cube, camera]);
   const game = new Game(entityManager);
   const bufferManager = new BufferManager(window.gl);
+  const inputManager = new InputManager();
   const renderSystem = new RenderSystem(window, entityManager, bufferManager);
-  const transformSystem = new TransformSystem(window, entityManager, bufferManager);
+  const transformSystem = new TransformSystem(window, entityManager, bufferManager, import_gl_matrix6.mat4.create());
+  const cameraSystem = new CameraSystem(entityManager, inputManager, 1e-3, 0.1);
   game.addSystem(renderSystem);
   game.addSystem(transformSystem);
+  game.addSystem(cameraSystem);
   game.run();
 };
 document.addEventListener("DOMContentLoaded", () => {

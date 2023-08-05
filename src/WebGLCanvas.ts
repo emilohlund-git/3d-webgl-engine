@@ -15,6 +15,8 @@ export class WebGLCanvas {
     this.width = width;
     this.height = height;
     document.body.appendChild(canvas);
+
+
   }
 
   clear() {
@@ -26,4 +28,6 @@ export class WebGLCanvas {
   setViewPort() {
     this.gl.viewport(0, 0, this.width, this.height);
   }
+
+
 }

@@ -44,7 +44,7 @@ export class RenderSystem extends System {
   private preloadEntities(entities: Entity[]) {
     for (const entity of entities) {
       const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");
-      if (!renderComponent) return;
+      if (!renderComponent) continue;
 
       this.bufferManager.createVBO(entity.id, new Float32Array(renderComponent.vertices));
       this.bufferManager.createIBO(entity.id, new Uint16Array(renderComponent.indices));

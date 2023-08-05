@@ -1,4 +1,5 @@
 import { mat4 } from "gl-matrix";
+import { ShaderProgram } from "../ShaderProgram";
 import { WebGLCanvas } from "../WebGLCanvas";
 import { BufferManager } from "../buffers/BufferManager";
 import { RenderComponent } from "../components/RenderComponent";
@@ -11,47 +12,55 @@ export class TransformSystem extends System {
   private bufferManager: BufferManager;
   private gl: WebGL2RenderingContext;
   private canvas: WebGLCanvas;
+  private projectionMatrix: mat4;
 
-  constructor(canvas: WebGLCanvas, entityManager: EntityManager, bufferManager: BufferManager) {
+  constructor(
+    canvas: WebGLCanvas,
+    entityManager: EntityManager,
+    bufferManager: BufferManager,
+    projectionMatrix: mat4,
+  ) {
     super();
 
     this.canvas = canvas;
     this.gl = canvas.gl;
     this.bufferManager = bufferManager;
     this.entityManager = entityManager;
+    this.projectionMatrix = projectionMatrix;
   }
 
-  preload() { }
+  preload() {
+    mat4.perspective(this.projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
+  }
 
   update(deltaTime: number) {
-    const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
-    entities.forEach(entity => {
-      const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");
+    const entities = this.entityManager.getEntitiesByComponents(["TransformComponent", "RenderComponent"]);
+
+    for (const entity of entities) {
       const transformComponent = entity.getComponent<TransformComponent>("TransformComponent");
-      if (!renderComponent || !transformComponent) return;
+      if (!transformComponent) continue;
 
       const modelMatrix = transformComponent.getModelMatrix();
-
-      const projectionMatrix = mat4.create();
-      mat4.perspective(projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
-
-      const viewMatrix = mat4.create();
-
       mat4.rotateZ(modelMatrix, modelMatrix, 0.001 * deltaTime);
       mat4.rotateX(modelMatrix, modelMatrix, 0.001 * deltaTime);
       mat4.rotateY(modelMatrix, modelMatrix, 0.001 * deltaTime);
 
-      viewMatrix[14] = viewMatrix[14] - 6;
+      const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");
+      if (!renderComponent) continue;
 
-      renderComponent.shaderProgram.setUniformMatrix4fv("pMatrix", projectionMatrix);
-      renderComponent.shaderProgram.setUniformMatrix4fv("vMatrix", viewMatrix);
-      renderComponent.shaderProgram.setUniformMatrix4fv("mMatrix", modelMatrix);
+      const shaderProgram = renderComponent.shaderProgram;
+      this.setMatrixUniforms(shaderProgram, modelMatrix);
 
-      this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "coordinates", 3, this.gl.FLOAT, 0, 0);
-      this.bufferManager.associateIBOWithAttribute(entity.id, renderComponent.shaderProgram, "coordinates", 3, this.gl.FLOAT, 0, 0);
-      this.bufferManager.associateColorBufferWithAttribute(entity.id, renderComponent.shaderProgram, "color", 3, this.gl.FLOAT, 0, 0);
-    });
+      this.bufferManager.associateVBOWithAttribute(entity.id, shaderProgram, "coordinates", 3, this.gl.FLOAT, 0, 0);
+      this.bufferManager.associateIBOWithAttribute(entity.id, shaderProgram, "coordinates", 3, this.gl.FLOAT, 0, 0);
+      this.bufferManager.associateColorBufferWithAttribute(entity.id, shaderProgram, "color", 3, this.gl.FLOAT, 0, 0);
+    };
   }
 
   render() { }
+
+  private setMatrixUniforms(shaderProgram: ShaderProgram, modelMatrix: mat4) {
+    shaderProgram.setUniformMatrix4fv("pMatrix", this.projectionMatrix);
+    shaderProgram.setUniformMatrix4fv("mMatrix", modelMatrix);
+  }
 }
