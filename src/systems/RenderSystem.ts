@@ -31,7 +31,6 @@ export class RenderSystem extends System {
   render() {
     this.canvas.clear();
 
-    // Loop through the entities and render them
     const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
     entities.forEach(entity => {
       const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");

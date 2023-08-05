@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "gl-matrix";
+import { vec3 } from "gl-matrix";
 import { ShaderProgram } from "../ShaderProgram";
 import { Component } from "./Component";
 
@@ -9,7 +9,6 @@ export class RenderComponent extends Component {
     public colors: number[],
     public position: vec3,
     readonly shaderProgram: ShaderProgram,
-    public modelMatrix: mat4 = mat4.create(),
   ) {
     super("RenderComponent");
   }

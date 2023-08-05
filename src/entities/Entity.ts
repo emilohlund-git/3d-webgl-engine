@@ -1,5 +1,5 @@
 import { Component } from "../components/Component";
-import { UUID } from "../utils";
+import { UUID } from "../utils/utils";
 import { ComponentName } from "./EntityManager";
 
 export class Entity {

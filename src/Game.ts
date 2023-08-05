@@ -8,6 +8,7 @@ export class Game {
 
   constructor(entityManager: EntityManager) {
     this.entityManager = entityManager;
+    this.gameLoop = this.gameLoop.bind(this);
   }
 
   public addSystem(system: System) {
@@ -26,7 +27,7 @@ export class Game {
     this.update(deltaTime);
     this.render();
 
-    requestAnimationFrame(this.gameLoop.bind(this));
+    requestAnimationFrame(this.gameLoop);
   }
 
   private update(deltaTime: number) {
@@ -37,7 +38,7 @@ export class Game {
 
   private render() {
     for (const system of this.systems) {
-      system.render();
+      system.render(this.entityManager);
     }
   }
 

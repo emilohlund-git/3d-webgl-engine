@@ -1,4 +1,4 @@
-import { UUID } from "../utils";
+import { UUID } from "../utils/utils";
 
 export abstract class Component {
   private id = UUID();
