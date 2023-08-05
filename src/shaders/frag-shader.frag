@@ -1,7 +1,13 @@
-precision mediump float;
+#version 300 es
+precision highp float;
 
-varying vec3 vColor;
+// Input variables
+in vec3 vColor; // Vertex color
 
-void main(void) {
-    gl_FragColor = vec4(vColor, 1.);
+// Output
+out vec4 fragColor;
+
+void main() {
+  // Use the vertex color as the fragment color
+    fragColor = vec4(vColor, 1.0f);
 }

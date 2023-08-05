@@ -20,9 +20,9 @@ export class RenderSystem extends System {
     this.entityManager = entityManager;
   }
 
-  preload() {
+  async preload() {
     const entities = this.entityManager.getEntitiesByComponent("RenderComponent");
-    this.preloadEntities(entities);
+    await this.preloadBuffers(entities);
     this.canvas.setViewPort();
   }
 
@@ -36,21 +36,23 @@ export class RenderSystem extends System {
       const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");
       if (!renderComponent) return;
 
+      renderComponent.shaderProgram.use();
+
+      this.bufferManager.bindBuffers(entity.id);
+
+      this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
+      this.bufferManager.associateColorBufferWithAttribute(entity.id, renderComponent.shaderProgram, "color", 3, this.gl.FLOAT, 0, 0);
       this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
     });
   }
 
-  private preloadEntities(entities: Entity[]) {
+  private async preloadBuffers(entities: Entity[]) {
     for (const entity of entities) {
       const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");
       if (!renderComponent) continue;
 
-      this.bufferManager.createVBO(entity.id, new Float32Array(renderComponent.vertices));
-      this.bufferManager.createIBO(entity.id, new Uint16Array(renderComponent.indices));
-      this.bufferManager.createColorBuffer(entity.id, new Float32Array(renderComponent.colors));
-
-      this.bufferManager.bindVBO(entity.id);
-      this.bufferManager.bindIBO(entity.id);
+      renderComponent.shaderProgram.use();
+      this.bufferManager.createBuffers(entity.id, renderComponent);
     }
   }
 }

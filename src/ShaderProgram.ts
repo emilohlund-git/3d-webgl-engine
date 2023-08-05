@@ -68,12 +68,19 @@ export class ShaderProgram {
     this.shaderProgram = shaderProgram;
   }
 
+  use() {
+    if (!this.program) return;
+    this.gl.useProgram(this.program);
+  }
+
   get program(): WebGLProgram | undefined {
     return this.shaderProgram;
   }
 
   setUniformMatrix4fv(uniformName: string, matrix: mat4) {
     if (!this.program) return;
+
+    this.use();
 
     const location = this.gl.getUniformLocation(this.program, uniformName);
     if (!location) return;

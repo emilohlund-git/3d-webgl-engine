@@ -2,6 +2,7 @@ import { ShaderProgram } from "../ShaderProgram";
 import { ColorBuffer } from "../buffers/ColorBuffer";
 import { IBO } from "../buffers/IBO";
 import { VBO } from "../buffers/VBO";
+import { RenderComponent } from "../components/RenderComponent";
 
 export class BufferManager {
   private gl: WebGL2RenderingContext;
@@ -34,28 +35,75 @@ export class BufferManager {
     this.colorBuffers.set(id, colorBuffer);
   }
 
+  createBuffers(id: string, renderComponent: RenderComponent) {
+    this.createVBO(id, new Float32Array(renderComponent.vertices));
+    this.createIBO(id, new Uint16Array(renderComponent.indices));
+    this.createColorBuffer(id, new Float32Array(renderComponent.colors));
+  }
+
   bindVBO(id: string) {
     const vbo = this.vbos.get(id);
     if (vbo) vbo.bindBuffer(id);
+    else console.warn(`Failed to get VBO for entity with ID: ${id}`);
   }
 
   bindIBO(id: string) {
     const ibo = this.ibos.get(id);
     if (ibo) ibo.bindBuffer(id);
+    else console.warn(`Failed to get IBO for entity with ID: ${id}`);
+  }
+
+  bindColorBuffer(id: string) {
+    const colorBuffer = this.colorBuffers.get(id);
+    if (colorBuffer) colorBuffer.bindBuffer(id);
+    else console.warn(`Failed to get Color Buffer for entity with ID: ${id}`);
+  }
+
+  bindBuffers(id: string) {
+    this.bindVBO(id);
+    this.bindIBO(id);
+    this.bindColorBuffer(id);
+  }
+
+  unbindVBO(id: string) {
+    const vbo = this.vbos.get(id);
+    if (vbo) vbo.unbindBuffer(id);
+    else console.warn(`Failed to get VBO for entity with ID: ${id}`);
+  }
+
+  unbindIBO(id: string) {
+    const ibo = this.ibos.get(id);
+    if (ibo) ibo.unbindBuffer(id);
+    else console.warn(`Failed to get IBO for entity with ID: ${id}`);
+  }
+
+  unbindColorBuffer(id: string) {
+    const colorBuffer = this.colorBuffers.get(id);
+    if (colorBuffer) colorBuffer.unbindBuffer(id);
+    else console.warn(`Failed to get Color Buffer for entity with ID: ${id}`);
+  }
+
+  inbindBuffers(id: string) {
+    this.unbindVBO(id);
+    this.unbindIBO(id);
+    this.unbindColorBuffer(id);
   }
 
   associateVBOWithAttribute(id: string, program: ShaderProgram, attribute: string, size: number, type: number, stride: number, offset: number) {
     const vbo = this.vbos.get(id);
     if (vbo) vbo.associateWithAttribute(id, program.program!, attribute, size, type, stride, offset);
+    else console.warn(`Failed to get VBO for entity with ID: ${id}`);
   }
 
   associateIBOWithAttribute(id: string, program: ShaderProgram, attribute: string, size: number, type: number, stride: number, offset: number) {
     const ibo = this.ibos.get(id);
     if (ibo) ibo.associateWithAttribute(id, program.program!, attribute, size, type, stride, offset);
+    else console.warn(`Failed to get IBO for entity with ID: ${id}`);
   }
 
   associateColorBufferWithAttribute(id: string, program: ShaderProgram, attribute: string, size: number, type: number, stride: number, offset: number) {
     const colorBuffer = this.colorBuffers.get(id);
     if (colorBuffer) colorBuffer.associateWithAttribute(id, program.program!, attribute, size, type, stride, offset);
+    else console.warn(`Failed to get Color Buffer for entity with ID: ${id}`);
   }
 }

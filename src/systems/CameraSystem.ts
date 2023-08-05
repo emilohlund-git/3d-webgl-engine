@@ -1,6 +1,7 @@
-import { quat, vec3 } from "gl-matrix";
+import { mat4, quat, vec3 } from "gl-matrix";
 import { InputManager } from "../InputManager";
 import { ShaderProgram } from "../ShaderProgram";
+import { WebGLCanvas } from "../WebGLCanvas";
 import { Camera } from "../cameras/Camera";
 import { OrbitCamera } from "../cameras/OrbitCamera";
 import { RenderComponent } from "../components/RenderComponent";
@@ -14,9 +15,13 @@ export class CameraSystem extends System {
   private mouseSensitivity: number;
   private prevMouseX: number = 0;
   private prevMouseY: number = 0
+  private projectionMatrix: mat4;
+  private canvas: WebGLCanvas;
 
   constructor(
     mouseSensitivity: number,
+    projectionMatrix: mat4,
+    canvas: WebGLCanvas,
     moveSpeed: number = 0.1,
   ) {
     super();
@@ -25,9 +30,13 @@ export class CameraSystem extends System {
     this.moveSpeed = moveSpeed;
     this.camera = new OrbitCamera(vec3.create(), quat.create());
     this.mouseSensitivity = mouseSensitivity;
+    this.projectionMatrix = projectionMatrix;
+    this.canvas = canvas;
   }
 
-  preload() { }
+  async preload() {
+    mat4.perspective(this.projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
+  }
 
   update() {
     this.handleInput();
@@ -69,6 +78,8 @@ export class CameraSystem extends System {
   }
 
   private setMatrixUniforms(shaderProgram: ShaderProgram) {
+    shaderProgram.use();
+    shaderProgram.setUniformMatrix4fv("pMatrix", this.projectionMatrix);
     shaderProgram.setUniformMatrix4fv("vMatrix", this.camera.getViewMatrix());
   }
 }

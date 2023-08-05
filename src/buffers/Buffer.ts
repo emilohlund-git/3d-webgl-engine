@@ -16,7 +16,6 @@ export abstract class GLBuffer {
   createBuffer(name: string, data: Float32Array | Uint16Array) {
     const indexBuffer = this.gl.createBuffer();
     if (!indexBuffer) return;
-    console.log("Created buffer: " + this.constructor.name);
     this.buffers.set(name, indexBuffer);
     this.bindBuffer(name);
     this.gl.bufferData(this.contextBase, data, this.gl.STATIC_DRAW);
@@ -30,6 +29,7 @@ export abstract class GLBuffer {
     const attributeLocation = this.gl.getAttribLocation(program, attribute);
     this.gl.vertexAttribPointer(attributeLocation, size, type, false, stride, offset);
     this.gl.enableVertexAttribArray(attributeLocation);
+    this.unbindBuffer(name);
   }
 
   bindBuffer(name: string) {

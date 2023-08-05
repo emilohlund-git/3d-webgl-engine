@@ -9,5 +9,5 @@ out vec4 fragColor;
 
 void main() {
   // Use the vertex color as the fragment color
-    fragColor = vec4(vColor, 1.0f);
+  fragColor = vec4(vColor, 1.0f);
 }

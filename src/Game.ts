@@ -42,9 +42,9 @@ export class Game {
     }
   }
 
-  public run() {
+  public async run() {
     for (const system of this.systems) {
-      system.preload();
+      await system.preload(this.entityManager);
     }
     this.gameLoop();
   }
