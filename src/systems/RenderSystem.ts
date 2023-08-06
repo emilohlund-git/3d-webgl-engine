@@ -52,6 +52,12 @@ export class RenderSystem extends System {
 
       if (materialComponent) {
         renderComponent.shaderProgram.setUniform3f("materialColor", materialComponent.color);
+        if (materialComponent.texture) {
+          renderComponent.shaderProgram.use();
+          renderComponent.shaderProgram.setUniform1i("textureSampler", 0); // Use texture unit 0
+          this.gl.activeTexture(this.gl.TEXTURE0);
+          this.gl.bindTexture(this.gl.TEXTURE_2D, materialComponent.texture);
+        }
       }
 
       this.bufferManager.bindBuffers(entity.id);
@@ -59,6 +65,7 @@ export class RenderSystem extends System {
         this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "normal", 3, this.gl.FLOAT, 0, 0);
       }
       this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
+      this.bufferManager.associateUVWithAttribute(entity.id, renderComponent.shaderProgram, "uv", 2, this.gl.FLOAT, 0, 0);
       this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
     });
   }

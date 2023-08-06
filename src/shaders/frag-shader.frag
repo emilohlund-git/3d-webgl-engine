@@ -4,6 +4,7 @@ precision highp float;
 in vec3 vColor;
 in vec3 vNormal;
 in vec3 vLightDirection;
+in vec2 vUv;
 
 // Output to the frame buffer
 out vec4 outColor;
@@ -13,6 +14,7 @@ uniform vec3 lightColor;
 uniform float lightIntensity;
 uniform vec3 ambientLightColor; // Ambient light color
 uniform float ambientLightIntensity; // Ambient light intensity
+uniform sampler2D textureSampler;
 
 void main() {
   // Normalize the surface normal
@@ -33,5 +35,8 @@ void main() {
   // Apply the lighting to the vertex color
   vec3 finalColor = vColor * lightingContribution;
 
-  outColor = vec4(finalColor, 1.0f);
+  // Sample the texture and apply it to the material
+  vec4 textureColor = texture(textureSampler, vUv);
+
+  outColor = vec4((finalColor * textureColor.rgb), 1.0f);
 }

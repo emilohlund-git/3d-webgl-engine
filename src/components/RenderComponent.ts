@@ -7,6 +7,7 @@ export class RenderComponent extends Component {
     public vertices: number[],
     public indices: number[],
     public normals: vec3[],
+    public uvs: number[],
     readonly shaderProgram: ShaderProgram,
   ) {
     super("RenderComponent");

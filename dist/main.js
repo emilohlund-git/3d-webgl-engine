@@ -4677,12 +4677,20 @@ var VBO = class extends GLBuffer {
   }
 };
 
+// src/buffers/UV.ts
+var UV = class extends GLBuffer {
+  constructor(gl) {
+    super(gl, /* @__PURE__ */ new Map(), gl.ARRAY_BUFFER);
+  }
+};
+
 // src/buffers/BufferManager.ts
 var BufferManager = class {
   constructor(gl) {
     this.gl = gl;
     this.vbos = /* @__PURE__ */ new Map();
     this.ibos = /* @__PURE__ */ new Map();
+    this.uvs = /* @__PURE__ */ new Map();
     this.colorBuffers = /* @__PURE__ */ new Map();
   }
   createVBO(id, data) {
@@ -4695,6 +4703,11 @@ var BufferManager = class {
     ibo.createBuffer(id, data);
     this.ibos.set(id, ibo);
   }
+  createUV(id, data) {
+    const uv = new UV(this.gl);
+    uv.createBuffer(id, data);
+    this.uvs.set(id, uv);
+  }
   createColorBuffer(id, data) {
     const colorBuffer = new ColorBuffer(this.gl);
     colorBuffer.createBuffer(id, data);
@@ -4703,7 +4716,7 @@ var BufferManager = class {
   createBuffers(id, renderComponent) {
     this.createVBO(id, new Float32Array(renderComponent.vertices));
     this.createIBO(id, new Uint16Array(renderComponent.indices));
-    this.createColorBuffer(id, new Float32Array(renderComponent.colors));
+    this.createUV(id, new Float32Array(renderComponent.uvs));
   }
   bindVBO(id) {
     const vbo = this.vbos.get(id);
@@ -4726,10 +4739,17 @@ var BufferManager = class {
     else
       console.warn(`Failed to get Color Buffer for entity with ID: ${id}`);
   }
+  bindUV(id) {
+    const uv = this.uvs.get(id);
+    if (uv)
+      uv.bindBuffer(id);
+    else
+      console.warn(`Failed to get UV for entity with ID: ${id}`);
+  }
   bindBuffers(id) {
     this.bindVBO(id);
     this.bindIBO(id);
-    this.bindColorBuffer(id);
+    this.bindUV(id);
   }
   unbindVBO(id) {
     const vbo = this.vbos.get(id);
@@ -4752,10 +4772,17 @@ var BufferManager = class {
     else
       console.warn(`Failed to get Color Buffer for entity with ID: ${id}`);
   }
+  unbindUV(id) {
+    const uv = this.uvs.get(id);
+    if (uv)
+      uv.unbindBuffer(id);
+    else
+      console.warn(`Failed to get UV for entity with ID: ${id}`);
+  }
   inbindBuffers(id) {
     this.unbindVBO(id);
     this.unbindIBO(id);
-    this.unbindColorBuffer(id);
+    this.unbindUV(id);
   }
   associateVBOWithAttribute(id, program, attribute, size, type, stride, offset) {
     const vbo = this.vbos.get(id);
@@ -4777,6 +4804,13 @@ var BufferManager = class {
       colorBuffer.associateWithAttribute(id, program.program, attribute, size, type, stride, offset);
     else
       console.warn(`Failed to get Color Buffer for entity with ID: ${id}`);
+  }
+  associateUVWithAttribute(id, program, attribute, size, type, stride, offset) {
+    const uv = this.uvs.get(id);
+    if (uv)
+      uv.associateWithAttribute(id, program.program, attribute, size, type, stride, offset);
+    else
+      console.warn(`Failed to get UV for entity with ID: ${id}`);
   }
 };
 
@@ -4884,6 +4918,15 @@ var ShaderProgram = class {
       return;
     this.gl.uniform3f(location, vectors[0], vectors[1], vectors[2]);
   }
+  setUniform1i(uniformName, vector) {
+    if (!this.program)
+      return;
+    this.use();
+    const location = this.gl.getUniformLocation(this.program, uniformName);
+    if (!location)
+      return;
+    this.gl.uniform1i(location, vector);
+  }
   setUniform1f(uniformName, vector) {
     if (!this.program)
       return;
@@ -4940,21 +4983,23 @@ var Component = class {
 // src/components/MaterialComponent.ts
 var MaterialComponent = class extends Component {
   // Transparency of the material (0.0: fully opaque, 1.0: fully transparent)
-  constructor(color, shininess = 32, transparency = 0) {
+  constructor(color, shininess = 32, transparency = 0, texture) {
     super("MaterialComponent");
     this.color = color;
     this.shininess = shininess;
     this.transparency = transparency;
+    this.texture = texture;
   }
 };
 
 // src/components/RenderComponent.ts
 var RenderComponent = class extends Component {
-  constructor(vertices, indices, normals, shaderProgram) {
+  constructor(vertices, indices, normals, uvs, shaderProgram) {
     super("RenderComponent");
     this.vertices = vertices;
     this.indices = indices;
     this.normals = normals;
+    this.uvs = uvs;
     this.shaderProgram = shaderProgram;
   }
 };
@@ -5145,6 +5190,246 @@ var TerrainUtils = class {
   }
 };
 
+// src/utils/MeshUtils.ts
+var MeshUtils = class {
+  static generateGridMesh(rows, cols) {
+    const heightmap = TerrainUtils.generateHeightMap(rows, cols, 0.05, 2, 0.6);
+    const terrainSizeX = heightmap[0].length;
+    const terrainSizeZ = heightmap.length;
+    const terrainScaleY = 4;
+    const vertices = [];
+    const indices = [];
+    for (let z = 0; z < terrainSizeZ; z++) {
+      for (let x = 0; x < terrainSizeX; x++) {
+        const height = heightmap[z][x] * terrainScaleY;
+        vertices.push(x, height, z);
+      }
+    }
+    for (let z = 0; z < terrainSizeZ - 1; z++) {
+      for (let x = 0; x < terrainSizeX - 1; x++) {
+        const topLeft = z * terrainSizeX + x;
+        const topRight = topLeft + 1;
+        const bottomLeft = (z + 1) * terrainSizeX + x;
+        const bottomRight = bottomLeft + 1;
+        indices.push(topLeft, bottomLeft, topRight);
+        indices.push(topRight, bottomLeft, bottomRight);
+      }
+    }
+    const normals = TerrainUtils.computeVertexNormals(vertices, indices);
+    const uvs = this.generateCubeUVs();
+    return { vertices, indices, normals, uvs };
+  }
+  static generateCubeMesh(size) {
+    const halfSize = size / 2;
+    const vertices = [
+      // Front face
+      -halfSize,
+      -halfSize,
+      halfSize,
+      halfSize,
+      -halfSize,
+      halfSize,
+      halfSize,
+      halfSize,
+      halfSize,
+      -halfSize,
+      halfSize,
+      halfSize,
+      // Back face
+      halfSize,
+      -halfSize,
+      -halfSize,
+      -halfSize,
+      -halfSize,
+      -halfSize,
+      -halfSize,
+      halfSize,
+      -halfSize,
+      halfSize,
+      halfSize,
+      -halfSize,
+      // Top face (counter-clockwise order)
+      -halfSize,
+      halfSize,
+      -halfSize,
+      halfSize,
+      halfSize,
+      -halfSize,
+      halfSize,
+      halfSize,
+      halfSize,
+      -halfSize,
+      halfSize,
+      halfSize,
+      // Bottom face (counter-clockwise order)
+      -halfSize,
+      -halfSize,
+      halfSize,
+      halfSize,
+      -halfSize,
+      halfSize,
+      halfSize,
+      -halfSize,
+      -halfSize,
+      -halfSize,
+      -halfSize,
+      -halfSize,
+      // Left face
+      -halfSize,
+      -halfSize,
+      -halfSize,
+      -halfSize,
+      halfSize,
+      -halfSize,
+      -halfSize,
+      halfSize,
+      halfSize,
+      -halfSize,
+      -halfSize,
+      halfSize,
+      // Right face
+      halfSize,
+      -halfSize,
+      halfSize,
+      halfSize,
+      halfSize,
+      halfSize,
+      halfSize,
+      halfSize,
+      -halfSize,
+      halfSize,
+      -halfSize,
+      -halfSize
+    ];
+    const indices = [
+      0,
+      1,
+      2,
+      0,
+      2,
+      3,
+      // Front face
+      4,
+      5,
+      6,
+      4,
+      6,
+      7,
+      // Back face
+      8,
+      9,
+      10,
+      8,
+      10,
+      11,
+      // Top face
+      12,
+      13,
+      14,
+      12,
+      14,
+      15,
+      // Bottom face
+      16,
+      17,
+      18,
+      16,
+      18,
+      19,
+      // Left face
+      20,
+      21,
+      22,
+      20,
+      22,
+      23
+      // Right face
+    ];
+    const normals = TerrainUtils.computeVertexNormals(vertices, indices);
+    const uvs = this.generateCubeUVs();
+    return { vertices, indices, normals, uvs };
+  }
+  static generateCubeUVs() {
+    return [
+      // Front
+      0,
+      0,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      // Back
+      0,
+      0,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      // Top
+      0,
+      0,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      // Bottom
+      0,
+      0,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      // Right
+      0,
+      0,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      // Left
+      0,
+      0,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1
+    ];
+    ;
+  }
+};
+
+// src/utils/TextureUtils.ts
+var TextureUtils = class {
+  static async loadTexture(gl, imageSrc) {
+    return new Promise((resolve, reject) => {
+      const texture = gl.createTexture();
+      if (!texture)
+        return reject();
+      const image = new Image();
+      image.onload = () => {
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        return resolve(texture);
+      };
+      image.onerror = reject;
+      image.src = imageSrc;
+    });
+  }
+};
+
 // src/entities/Entity.ts
 var Entity = class {
   constructor() {
@@ -5177,129 +5462,22 @@ async function createCubeEntity(webGLContext) {
   const cube = new Entity();
   const shaderProgram = new ShaderProgram(webGLContext);
   await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
-  const vertices = [
-    -1,
-    -1,
-    -1,
-    1,
-    -1,
-    -1,
-    1,
-    1,
-    -1,
-    -1,
-    1,
-    -1,
-    -1,
-    -1,
-    1,
-    1,
-    -1,
-    1,
-    1,
-    1,
-    1,
-    -1,
-    1,
-    1,
-    -1,
-    -1,
-    -1,
-    -1,
-    1,
-    -1,
-    -1,
-    1,
-    1,
-    -1,
-    -1,
-    1,
-    1,
-    -1,
-    -1,
-    1,
-    1,
-    -1,
-    1,
-    1,
-    1,
-    1,
-    -1,
-    1,
-    -1,
-    -1,
-    -1,
-    -1,
-    -1,
-    1,
-    1,
-    -1,
-    1,
-    1,
-    -1,
-    -1,
-    -1,
-    1,
-    -1,
-    -1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    -1
-  ];
-  const indices = [
-    0,
-    1,
-    2,
-    0,
-    2,
-    3,
-    4,
-    5,
-    6,
-    4,
-    6,
-    7,
-    8,
-    9,
-    10,
-    8,
-    10,
-    11,
-    12,
-    13,
-    14,
-    12,
-    14,
-    15,
-    16,
-    17,
-    18,
-    16,
-    18,
-    19,
-    20,
-    21,
-    22,
-    20,
-    22,
-    23
-  ];
-  const normals = TerrainUtils.computeVertexNormals(vertices, indices);
+  const { vertices, indices, normals, uvs } = MeshUtils.generateCubeMesh(2);
   const renderComponent = new RenderComponent(
     vertices,
     indices,
     normals,
+    uvs,
     shaderProgram
   );
+  const textureSrc = "./assets/textures/short_bricks_floor_disp_1k.png";
+  const texture = await TextureUtils.loadTexture(webGLContext, textureSrc);
+  console.log(texture);
   const materialComponent = new MaterialComponent(
-    import_gl_matrix4.vec3.fromValues(1, 0, 0),
+    import_gl_matrix4.vec3.fromValues(1, 1, 1),
     0.8,
-    1
+    1,
+    texture
   );
   cube.addComponent("RenderComponent", renderComponent);
   cube.addComponent("LightComponent", new SpotLightComponent(
@@ -5320,32 +5498,10 @@ async function createCubeEntity(webGLContext) {
 // src/entities/createTerrainEntity.ts
 var import_gl_matrix5 = __toESM(require_cjs());
 async function createTerrainEntity(webGLContext) {
-  const heightmap = TerrainUtils.generateHeightMap(300, 300, 0.05, 2, 0.6);
   const terrain = new Entity();
   const shaderProgram = new ShaderProgram(webGLContext);
   await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
-  const terrainSizeX = heightmap[0].length;
-  const terrainSizeZ = heightmap.length;
-  const terrainScaleY = 4;
-  const vertices = [];
-  const indices = [];
-  for (let z = 0; z < terrainSizeZ; z++) {
-    for (let x = 0; x < terrainSizeX; x++) {
-      const height = heightmap[z][x] * terrainScaleY;
-      vertices.push(x, height, z);
-    }
-  }
-  for (let z = 0; z < terrainSizeZ - 1; z++) {
-    for (let x = 0; x < terrainSizeX - 1; x++) {
-      const topLeft = z * terrainSizeX + x;
-      const topRight = topLeft + 1;
-      const bottomLeft = (z + 1) * terrainSizeX + x;
-      const bottomRight = bottomLeft + 1;
-      indices.push(topLeft, bottomLeft, topRight);
-      indices.push(topRight, bottomLeft, bottomRight);
-    }
-  }
-  const normals = TerrainUtils.computeVertexNormals(vertices, indices);
+  const { vertices, indices, normals, uvs } = MeshUtils.generateGridMesh(200, 200);
   const materialComponent = new MaterialComponent(
     import_gl_matrix5.vec3.fromValues(0.6, 0.4, 0.2),
     0.8,
@@ -5355,6 +5511,7 @@ async function createTerrainEntity(webGLContext) {
     vertices,
     indices,
     normals,
+    uvs,
     shaderProgram
   );
   terrain.addComponent("RenderComponent", renderComponent);
@@ -5611,12 +5768,19 @@ var RenderSystem = class extends System {
       }
       if (materialComponent) {
         renderComponent.shaderProgram.setUniform3f("materialColor", materialComponent.color);
+        if (materialComponent.texture) {
+          renderComponent.shaderProgram.use();
+          renderComponent.shaderProgram.setUniform1i("textureSampler", 0);
+          this.gl.activeTexture(this.gl.TEXTURE0);
+          this.gl.bindTexture(this.gl.TEXTURE_2D, materialComponent.texture);
+        }
       }
       this.bufferManager.bindBuffers(entity.id);
       if (renderComponent.normals.length > 0) {
         this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "normal", 3, this.gl.FLOAT, 0, 0);
       }
       this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
+      this.bufferManager.associateUVWithAttribute(entity.id, renderComponent.shaderProgram, "uv", 2, this.gl.FLOAT, 0, 0);
       this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
     });
   }

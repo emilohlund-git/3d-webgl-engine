@@ -3,10 +3,12 @@
 // Input attributes
 in vec3 position; // Vertex position
 in vec3 normal;   // Vertex normal
+in vec2 uv;
 
 out vec3 vColor;
 out vec3 vNormal; // Output surface normal to fragment shader
 out vec3 vLightDirection; // Output light direction in eye (view) space
+out vec2 vUv;
 
 // Uniforms
 uniform mat4 pMatrix; // Projection matrix
@@ -45,4 +47,6 @@ void main() {
 
   // Transform the normal to world space
   vNormal = normalize(mat3(mvMatrix) * normal);
+
+  vUv = uv;
 }

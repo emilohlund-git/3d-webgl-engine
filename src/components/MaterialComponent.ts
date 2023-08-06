@@ -7,11 +7,12 @@ export class MaterialComponent extends Component {
   shininess: number;   // Shininess of the material (used for specular highlights)
   transparency: number; // Transparency of the material (0.0: fully opaque, 1.0: fully transparent)
 
-  constructor(color: vec3, shininess: number = 32, transparency: number = 0.0) {
+  constructor(color: vec3, shininess: number = 32, transparency: number = 0.0, texture?: WebGLTexture) {
     super("MaterialComponent");
 
     this.color = color;
     this.shininess = shininess;
     this.transparency = transparency;
+    this.texture = texture;
   }
 }

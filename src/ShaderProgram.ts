@@ -88,6 +88,17 @@ export class ShaderProgram {
     this.gl.uniform3f(location, vectors[0], vectors[1], vectors[2]);
   }
 
+  setUniform1i(uniformName: string, vector: number) {
+    if (!this.program) return;
+
+    this.use();
+
+    const location = this.gl.getUniformLocation(this.program, uniformName);
+    if (!location) return;
+
+    this.gl.uniform1i(location, vector);
+  }
+
   setUniform1f(uniformName: string, vector: number) {
     if (!this.program) return;
 

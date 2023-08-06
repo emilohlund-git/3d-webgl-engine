@@ -3,17 +3,20 @@ import { ColorBuffer } from "../buffers/ColorBuffer";
 import { IBO } from "../buffers/IBO";
 import { VBO } from "../buffers/VBO";
 import { RenderComponent } from "../components/RenderComponent";
+import { UV } from "./UV";
 
 export class BufferManager {
   private gl: WebGL2RenderingContext;
   private vbos: Map<string, VBO>;
   private ibos: Map<string, IBO>;
+  private uvs: Map<String, UV>;
   private colorBuffers: Map<string, ColorBuffer>;
 
   constructor(gl: WebGL2RenderingContext) {
     this.gl = gl;
     this.vbos = new Map();
     this.ibos = new Map();
+    this.uvs = new Map();
     this.colorBuffers = new Map();
   }
 
@@ -29,6 +32,12 @@ export class BufferManager {
     this.ibos.set(id, ibo);
   }
 
+  createUV(id: string, data: Float32Array) {
+    const uv = new UV(this.gl);
+    uv.createBuffer(id, data);
+    this.uvs.set(id, uv);
+  }
+
   createColorBuffer(id: string, data: Float32Array) {
     const colorBuffer = new ColorBuffer(this.gl);
     colorBuffer.createBuffer(id, data);
@@ -38,7 +47,7 @@ export class BufferManager {
   createBuffers(id: string, renderComponent: RenderComponent) {
     this.createVBO(id, new Float32Array(renderComponent.vertices));
     this.createIBO(id, new Uint16Array(renderComponent.indices));
-    this.createColorBuffer(id, new Float32Array(renderComponent.colors));
+    this.createUV(id, new Float32Array(renderComponent.uvs));
   }
 
   bindVBO(id: string) {
@@ -59,10 +68,16 @@ export class BufferManager {
     else console.warn(`Failed to get Color Buffer for entity with ID: ${id}`);
   }
 
+  bindUV(id: string) {
+    const uv = this.uvs.get(id);
+    if (uv) uv.bindBuffer(id);
+    else console.warn(`Failed to get UV for entity with ID: ${id}`);
+  }
+
   bindBuffers(id: string) {
     this.bindVBO(id);
     this.bindIBO(id);
-    this.bindColorBuffer(id);
+    this.bindUV(id);
   }
 
   unbindVBO(id: string) {
@@ -83,10 +98,16 @@ export class BufferManager {
     else console.warn(`Failed to get Color Buffer for entity with ID: ${id}`);
   }
 
+  unbindUV(id: string) {
+    const uv = this.uvs.get(id);
+    if (uv) uv.unbindBuffer(id);
+    else console.warn(`Failed to get UV for entity with ID: ${id}`);
+  }
+
   inbindBuffers(id: string) {
     this.unbindVBO(id);
     this.unbindIBO(id);
-    this.unbindColorBuffer(id);
+    this.unbindUV(id);
   }
 
   associateVBOWithAttribute(id: string, program: ShaderProgram, attribute: string, size: number, type: number, stride: number, offset: number) {
@@ -105,5 +126,11 @@ export class BufferManager {
     const colorBuffer = this.colorBuffers.get(id);
     if (colorBuffer) colorBuffer.associateWithAttribute(id, program.program!, attribute, size, type, stride, offset);
     else console.warn(`Failed to get Color Buffer for entity with ID: ${id}`);
+  }
+
+  associateUVWithAttribute(id: string, program: ShaderProgram, attribute: string, size: number, type: number, stride: number, offset: number) {
+    const uv = this.uvs.get(id);
+    if (uv) uv.associateWithAttribute(id, program.program!, attribute, size, type, stride, offset);
+    else console.warn(`Failed to get UV for entity with ID: ${id}`);
   }
 }
