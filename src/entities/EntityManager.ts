@@ -5,6 +5,10 @@ export type ComponentName = "RenderComponent" | "TransformComponent" | "LightCom
 export class EntityManager {
   private entities = <Entity[]>[];
 
+  public getEntities(): Entity[] {
+    return this.entities;
+  }
+
   public addEntity(entity: Entity) {
     this.entities.push(entity);
   }

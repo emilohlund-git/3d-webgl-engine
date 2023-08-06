@@ -11,14 +11,12 @@ export class CameraSystem extends System {
   private camera: Camera;
   private inputManager: InputManager;
   private moveSpeed: number;
-  private mouseSensitivity: number;
   private prevMouseX: number = 0;
   private prevMouseY: number = 0
   private projectionMatrix: mat4;
   private canvas: WebGLCanvas;
 
   constructor(
-    mouseSensitivity: number,
     projectionMatrix: mat4,
     canvas: WebGLCanvas,
     camera: Camera,
@@ -29,7 +27,6 @@ export class CameraSystem extends System {
     this.inputManager = new InputManager();
     this.moveSpeed = moveSpeed;
     this.camera = camera;
-    this.mouseSensitivity = mouseSensitivity;
     this.projectionMatrix = projectionMatrix;
     this.canvas = canvas;
   }
@@ -67,8 +64,8 @@ export class CameraSystem extends System {
     }
 
     if (this.inputManager.isMouseButtonDown(0)) {
-      const deltaX = (this.inputManager.getMouseX() - this.prevMouseX) * this.mouseSensitivity;
-      const deltaY = (this.inputManager.getMouseY() - this.prevMouseY) * this.mouseSensitivity;
+      const deltaX = (this.inputManager.getMouseX() - this.prevMouseX) * 0.001;
+      const deltaY = (this.inputManager.getMouseY() - this.prevMouseY) * 0.001;
 
       this.camera.rotate(-deltaY, -deltaX);
     }
