@@ -9,7 +9,6 @@ import { CameraSystem } from "./systems/CameraSystem";
 import { LightingSystem } from "./systems/LightingSystem";
 import { RenderSystem } from "./systems/RenderSystem";
 import { TransformSystem } from "./systems/TransformSystem";
-import { TerrainUtils } from "./utils/TerrainUtils";
 
 const main = async () => {
   try {
@@ -17,9 +16,7 @@ const main = async () => {
 
     const entityManager = new EntityManager();
 
-    const heightmap = TerrainUtils.generateHeightMap(100, 100, 0.02, 1.0, 42);
-
-    const terrain = await createTerrainEntity(window.gl, heightmap);
+    const terrain = await createTerrainEntity(window.gl);
     const cube = await createCubeEntity(window.gl);
     entityManager.addEntities([terrain, cube])
 

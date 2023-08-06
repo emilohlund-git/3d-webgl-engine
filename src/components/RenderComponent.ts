@@ -6,7 +6,6 @@ export class RenderComponent extends Component {
   constructor(
     public vertices: number[],
     public indices: number[],
-    public colors: number[],
     public normals: vec3[],
     readonly shaderProgram: ShaderProgram,
   ) {

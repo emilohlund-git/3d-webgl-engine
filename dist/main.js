@@ -4815,7 +4815,7 @@ var EntityManager = class {
 };
 
 // src/entities/createCubeEntity.ts
-var import_gl_matrix3 = __toESM(require_cjs());
+var import_gl_matrix4 = __toESM(require_cjs());
 
 // src/ShaderProgram.ts
 var ShaderProgram = class {
@@ -4904,9 +4904,6 @@ var ShaderProgram = class {
   }
 };
 
-// src/components/LightingComponent.ts
-var import_gl_matrix = __toESM(require_cjs());
-
 // src/utils/utils.ts
 function* seedSequence() {
   let seed = Date.now();
@@ -4940,87 +4937,211 @@ var Component = class {
   }
 };
 
-// src/components/LightingComponent.ts
-var LightingComponent = class extends Component {
-  constructor(color = import_gl_matrix.vec3.fromValues(1, 1, 1), intensity = 1, direction = import_gl_matrix.vec3.create(), combinedLightcolor = import_gl_matrix.vec3.fromValues(0.3, 0.3, 0.3)) {
-    super("LightingComponent");
+// src/components/MaterialComponent.ts
+var MaterialComponent = class extends Component {
+  // Transparency of the material (0.0: fully opaque, 1.0: fully transparent)
+  constructor(color, shininess = 32, transparency = 0) {
+    super("MaterialComponent");
     this.color = color;
-    this.intensity = intensity;
-    this.direction = direction;
-    this.combinedLightColor = combinedLightcolor;
+    this.shininess = shininess;
+    this.transparency = transparency;
   }
 };
 
 // src/components/RenderComponent.ts
 var RenderComponent = class extends Component {
-  constructor(vertices, indices, colors, normals, shaderProgram) {
+  constructor(vertices, indices, normals, shaderProgram) {
     super("RenderComponent");
     this.vertices = vertices;
     this.indices = indices;
-    this.colors = colors;
     this.normals = normals;
     this.shaderProgram = shaderProgram;
   }
 };
 
 // src/components/TransformComponent.ts
-var import_gl_matrix2 = __toESM(require_cjs());
+var import_gl_matrix = __toESM(require_cjs());
 var TransformComponent = class extends Component {
-  constructor(position = import_gl_matrix2.vec3.create(), rotation = import_gl_matrix2.quat.create(), scale = import_gl_matrix2.vec3.fromValues(1, 1, 1)) {
+  constructor(position = import_gl_matrix.vec3.create(), rotation = import_gl_matrix.quat.create(), scale = import_gl_matrix.vec3.fromValues(1, 1, 1)) {
     super("TransformComponent");
-    this.modelMatrix = import_gl_matrix2.mat4.create();
+    this.modelMatrix = import_gl_matrix.mat4.create();
     this.position = position;
     this.rotation = rotation;
     this.scale = scale;
   }
   getModelMatrix() {
-    import_gl_matrix2.mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
-    import_gl_matrix2.mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotation[0]);
-    import_gl_matrix2.mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotation[1]);
-    import_gl_matrix2.mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2]);
-    import_gl_matrix2.mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
+    import_gl_matrix.mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
+    import_gl_matrix.mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotation[0]);
+    import_gl_matrix.mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotation[1]);
+    import_gl_matrix.mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2]);
+    import_gl_matrix.mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
     return this.modelMatrix;
   }
   moveForward(distance) {
-    const forward = import_gl_matrix2.vec3.fromValues(0, 0, 1);
-    import_gl_matrix2.vec3.transformQuat(forward, forward, this.rotation);
-    import_gl_matrix2.vec3.scaleAndAdd(this.position, this.position, forward, distance);
+    const forward = import_gl_matrix.vec3.fromValues(0, 0, 1);
+    import_gl_matrix.vec3.transformQuat(forward, forward, this.rotation);
+    import_gl_matrix.vec3.scaleAndAdd(this.position, this.position, forward, distance);
   }
   moveBackward(distance) {
-    const backward = import_gl_matrix2.vec3.fromValues(0, 0, -1);
-    import_gl_matrix2.vec3.transformQuat(backward, backward, this.rotation);
-    import_gl_matrix2.vec3.scaleAndAdd(this.position, this.position, backward, distance);
+    const backward = import_gl_matrix.vec3.fromValues(0, 0, -1);
+    import_gl_matrix.vec3.transformQuat(backward, backward, this.rotation);
+    import_gl_matrix.vec3.scaleAndAdd(this.position, this.position, backward, distance);
   }
   moveLeft(distance) {
-    const left = import_gl_matrix2.vec3.fromValues(1, 0, 0);
-    import_gl_matrix2.vec3.transformQuat(left, left, this.rotation);
-    import_gl_matrix2.vec3.scaleAndAdd(this.position, this.position, left, distance);
+    const left = import_gl_matrix.vec3.fromValues(1, 0, 0);
+    import_gl_matrix.vec3.transformQuat(left, left, this.rotation);
+    import_gl_matrix.vec3.scaleAndAdd(this.position, this.position, left, distance);
   }
   moveRight(distance) {
-    const right = import_gl_matrix2.vec3.fromValues(-1, 0, 0);
-    import_gl_matrix2.vec3.transformQuat(right, right, this.rotation);
-    import_gl_matrix2.vec3.scaleAndAdd(this.position, this.position, right, distance);
+    const right = import_gl_matrix.vec3.fromValues(-1, 0, 0);
+    import_gl_matrix.vec3.transformQuat(right, right, this.rotation);
+    import_gl_matrix.vec3.scaleAndAdd(this.position, this.position, right, distance);
   }
   rotateX(angle) {
-    import_gl_matrix2.quat.rotateX(this.rotation, this.rotation, angle);
+    import_gl_matrix.quat.rotateX(this.rotation, this.rotation, angle);
   }
   rotateY(angle) {
-    import_gl_matrix2.quat.rotateY(this.rotation, this.rotation, angle);
+    import_gl_matrix.quat.rotateY(this.rotation, this.rotation, angle);
   }
   rotateZ(angle) {
-    import_gl_matrix2.quat.rotateZ(this.rotation, this.rotation, angle);
+    import_gl_matrix.quat.rotateZ(this.rotation, this.rotation, angle);
   }
   getRotationQuat() {
-    const quatX = import_gl_matrix2.quat.create();
-    const quatY = import_gl_matrix2.quat.create();
-    const quatZ = import_gl_matrix2.quat.create();
-    import_gl_matrix2.quat.setAxisAngle(quatX, [1, 0, 0], this.rotation[0]);
-    import_gl_matrix2.quat.setAxisAngle(quatY, [0, 1, 0], this.rotation[1]);
-    import_gl_matrix2.quat.setAxisAngle(quatZ, [0, 0, 1], this.rotation[2]);
-    const resultQuat = import_gl_matrix2.quat.create();
-    import_gl_matrix2.quat.multiply(resultQuat, quatY, quatX);
-    import_gl_matrix2.quat.multiply(resultQuat, quatZ, resultQuat);
+    const quatX = import_gl_matrix.quat.create();
+    const quatY = import_gl_matrix.quat.create();
+    const quatZ = import_gl_matrix.quat.create();
+    import_gl_matrix.quat.setAxisAngle(quatX, [1, 0, 0], this.rotation[0]);
+    import_gl_matrix.quat.setAxisAngle(quatY, [0, 1, 0], this.rotation[1]);
+    import_gl_matrix.quat.setAxisAngle(quatZ, [0, 0, 1], this.rotation[2]);
+    const resultQuat = import_gl_matrix.quat.create();
+    import_gl_matrix.quat.multiply(resultQuat, quatY, quatX);
+    import_gl_matrix.quat.multiply(resultQuat, quatZ, resultQuat);
     return resultQuat;
+  }
+};
+
+// src/components/lights/LightComponent.ts
+var import_gl_matrix2 = __toESM(require_cjs());
+var LightComponent = class extends Component {
+  // Type identifier for the light (e.g., "point", "directional", "spot")
+  constructor(color, intensity, type) {
+    super("LightComponent");
+    // The intensity/brightness of the light
+    this.direction = import_gl_matrix2.vec3.create();
+    this.combinedLightColor = import_gl_matrix2.vec3.create();
+    this.color = color;
+    this.intensity = intensity;
+    this.type = type;
+  }
+};
+
+// src/components/lights/SpotLightComponent.ts
+var SpotLightComponent = class extends LightComponent {
+  constructor(color, intensity, position, direction, angle, innerConeAngle, outerConeAngle, cutoffAngle) {
+    super(color, intensity, "spot" /* Spot */);
+    this.position = position;
+    this.direction = direction;
+    this.angle = angle;
+    this.innerConeAngle = innerConeAngle;
+    this.outerConeAngle = outerConeAngle;
+    this.cutoffAngle = cutoffAngle;
+  }
+};
+
+// src/utils/TerrainUtils.ts
+var import_gl_matrix3 = __toESM(require_cjs());
+var TerrainUtils = class {
+  static generateHeightMap(width, height, frequency, amplitude, octaves) {
+    const heightMap = new Array(height).fill(0).map(() => new Array(width).fill(0));
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        let noiseValue = 0;
+        let frequencyTemp = frequency;
+        let amplitudeTemp = amplitude;
+        for (let o = 0; o < octaves; o++) {
+          const xCoord = x * frequencyTemp;
+          const yCoord = y * frequencyTemp;
+          const noise = this.perlin(xCoord, yCoord);
+          noiseValue += noise * amplitudeTemp;
+          frequencyTemp *= 2;
+          amplitudeTemp *= 0.5;
+        }
+        noiseValue = Math.max(0, noiseValue);
+        heightMap[y][x] = noiseValue;
+      }
+    }
+    return heightMap;
+  }
+  static interpolate(a0, a1, w) {
+    if (0 > w)
+      return a0;
+    if (1 < w)
+      return a1;
+    return (a1 - a0) * ((w * (w * 6 - 15) + 10) * w * w * w) + a0;
+  }
+  static randomGradient(ix, iy) {
+    const w = 8 * 32;
+    const s = w / 2;
+    let a = ix, b = iy;
+    a *= 3284157443;
+    b ^= a << s | a >>> w - s;
+    b *= 1911520717;
+    a ^= b << s | b >>> w - s;
+    a *= 2048419325;
+    const random = a * (Math.PI / ~(~0 >>> 1));
+    const v = [Math.cos(random), Math.sin(random)];
+    return v;
+  }
+  static dotGridGradient(ix, iy, x, y) {
+    const gradient = this.randomGradient(ix, iy);
+    const dx = x - ix;
+    const dy = y - iy;
+    return dx * gradient[0] + dy * gradient[1];
+  }
+  static perlin(x, y) {
+    const x0 = Math.floor(x);
+    const x1 = x0 + 1;
+    const y0 = Math.floor(y);
+    const y1 = y0 + 1;
+    const sx = x - x0;
+    const sy = y - y0;
+    let n0, n1, ix0, ix1, value;
+    n0 = this.dotGridGradient(x0, y0, x, y);
+    n1 = this.dotGridGradient(x1, y0, x, y);
+    ix0 = this.interpolate(n0, n1, sx);
+    n0 = this.dotGridGradient(x0, x1, x, y);
+    n1 = this.dotGridGradient(x1, y1, x, y);
+    ix1 = this.interpolate(n0, n1, sx);
+    value = this.interpolate(ix0, ix1, sy);
+    return value;
+  }
+  static computeVertexNormals(vertices, indices) {
+    const faceNormals = [];
+    const vertexNormals = new Array(vertices.length / 3).fill(import_gl_matrix3.vec3.create());
+    for (let i = 0; i < indices.length; i += 3) {
+      const p1 = indices[i] * 3;
+      const p2 = indices[i + 1] * 3;
+      const p3 = indices[i + 2] * 3;
+      const v1 = import_gl_matrix3.vec3.fromValues(vertices[p1], vertices[p1 + 1], vertices[p1 + 2]);
+      const v2 = import_gl_matrix3.vec3.fromValues(vertices[p2], vertices[p2 + 1], vertices[p2 + 2]);
+      const v3 = import_gl_matrix3.vec3.fromValues(vertices[p3], vertices[p3 + 1], vertices[p3 + 2]);
+      const edge1 = import_gl_matrix3.vec3.create();
+      const edge2 = import_gl_matrix3.vec3.create();
+      import_gl_matrix3.vec3.subtract(edge1, v2, v1);
+      import_gl_matrix3.vec3.subtract(edge2, v3, v1);
+      const faceNormal = import_gl_matrix3.vec3.create();
+      import_gl_matrix3.vec3.cross(faceNormal, edge1, edge2);
+      import_gl_matrix3.vec3.normalize(faceNormal, faceNormal);
+      faceNormals.push(faceNormal);
+    }
+    for (let i = 0; i < indices.length; i++) {
+      const vertexIndex = indices[i];
+      import_gl_matrix3.vec3.add(vertexNormals[vertexIndex], vertexNormals[vertexIndex], faceNormals[Math.floor(i / 3)]);
+    }
+    vertexNormals.forEach((normal) => {
+      import_gl_matrix3.vec3.normalize(normal, normal);
+    });
+    return vertexNormals;
   }
 };
 
@@ -5168,214 +5289,50 @@ async function createCubeEntity(webGLContext) {
     22,
     23
   ];
-  const colors = [
-    5,
-    3,
-    7,
-    5,
-    3,
-    7,
-    5,
-    3,
-    7,
-    5,
-    3,
-    7,
-    1,
-    1,
-    3,
-    1,
-    1,
-    3,
-    1,
-    1,
-    3,
-    1,
-    1,
-    3,
-    0,
-    0,
-    1,
-    0,
-    0,
-    1,
-    0,
-    0,
-    1,
-    0,
-    0,
-    1,
-    1,
-    0,
-    0,
-    1,
-    0,
-    0,
-    1,
-    0,
-    0,
-    1,
-    0,
-    0,
-    1,
-    1,
-    0,
-    1,
-    1,
-    0,
-    1,
-    1,
-    0,
-    1,
-    1,
-    0,
-    0,
-    1,
-    0,
-    0,
-    1,
-    0,
-    0,
-    1,
-    0,
-    0,
-    1,
-    0
-  ];
+  const normals = TerrainUtils.computeVertexNormals(vertices, indices);
   const renderComponent = new RenderComponent(
     vertices,
     indices,
-    colors,
-    [],
+    normals,
     shaderProgram
   );
-  const lightingComponent = new LightingComponent(
-    import_gl_matrix3.vec3.fromValues(1, 1, 1),
-    0.2
+  const materialComponent = new MaterialComponent(
+    import_gl_matrix4.vec3.fromValues(1, 0, 0),
+    0.8,
+    1
   );
   cube.addComponent("RenderComponent", renderComponent);
-  cube.addComponent("LightingComponent", lightingComponent);
-  cube.addComponent("TransformComponent", new TransformComponent(import_gl_matrix3.vec3.fromValues(0, 0.035, 0)));
+  cube.addComponent("LightComponent", new SpotLightComponent(
+    import_gl_matrix4.vec3.fromValues(1, 1, 1),
+    1,
+    import_gl_matrix4.vec3.fromValues(-1, -1, -1),
+    import_gl_matrix4.vec3.fromValues(1, 1, 1),
+    121,
+    0.8,
+    0.8,
+    141
+  ));
+  cube.addComponent("MaterialComponent", materialComponent);
+  cube.addComponent("TransformComponent", new TransformComponent(import_gl_matrix4.vec3.fromValues(0, 0.035, 0)));
   return cube;
 }
 
 // src/entities/createTerrainEntity.ts
 var import_gl_matrix5 = __toESM(require_cjs());
-
-// src/utils/TerrainUtils.ts
-var import_gl_matrix4 = __toESM(require_cjs());
-var TerrainUtils = class {
-  static generateHeightMap(width, height, frequency, amplitude, octaves) {
-    const heightMap = new Array(height).fill(0).map(() => new Array(width).fill(0));
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        let noiseValue = 0;
-        let frequencyTemp = frequency;
-        let amplitudeTemp = amplitude;
-        for (let o = 0; o < octaves; o++) {
-          const xCoord = x * frequencyTemp;
-          const yCoord = y * frequencyTemp;
-          const noise = this.perlin(xCoord, yCoord);
-          noiseValue += noise * amplitudeTemp;
-          frequencyTemp *= 2;
-          amplitudeTemp *= 0.5;
-        }
-        noiseValue = Math.max(0, noiseValue);
-        heightMap[y][x] = noiseValue;
-      }
-    }
-    return heightMap;
-  }
-  static interpolate(a0, a1, w) {
-    if (0 > w)
-      return a0;
-    if (1 < w)
-      return a1;
-    return (a1 - a0) * ((w * (w * 6 - 15) + 10) * w * w * w) + a0;
-  }
-  static randomGradient(ix, iy) {
-    const w = 8 * 32;
-    const s = w / 2;
-    let a = ix, b = iy;
-    a *= 3284157443;
-    b ^= a << s | a >>> w - s;
-    b *= 1911520717;
-    a ^= b << s | b >>> w - s;
-    a *= 2048419325;
-    const random = a * (Math.PI / ~(~0 >>> 1));
-    const v = [Math.cos(random), Math.sin(random)];
-    return v;
-  }
-  static dotGridGradient(ix, iy, x, y) {
-    const gradient = this.randomGradient(ix, iy);
-    const dx = x - ix;
-    const dy = y - iy;
-    return dx * gradient[0] + dy * gradient[1];
-  }
-  static perlin(x, y) {
-    const x0 = Math.floor(x);
-    const x1 = x0 + 1;
-    const y0 = Math.floor(y);
-    const y1 = y0 + 1;
-    const sx = x - x0;
-    const sy = y - y0;
-    let n0, n1, ix0, ix1, value;
-    n0 = this.dotGridGradient(x0, y0, x, y);
-    n1 = this.dotGridGradient(x1, y0, x, y);
-    ix0 = this.interpolate(n0, n1, sx);
-    n0 = this.dotGridGradient(x0, x1, x, y);
-    n1 = this.dotGridGradient(x1, y1, x, y);
-    ix1 = this.interpolate(n0, n1, sx);
-    value = this.interpolate(ix0, ix1, sy);
-    return value;
-  }
-  static computeVertexNormals(vertices, indices) {
-    const faceNormals = [];
-    const vertexNormals = new Array(vertices.length / 3).fill(import_gl_matrix4.vec3.create());
-    for (let i = 0; i < indices.length; i += 3) {
-      const p1 = indices[i] * 3;
-      const p2 = indices[i + 1] * 3;
-      const p3 = indices[i + 2] * 3;
-      const v1 = import_gl_matrix4.vec3.fromValues(vertices[p1], vertices[p1 + 1], vertices[p1 + 2]);
-      const v2 = import_gl_matrix4.vec3.fromValues(vertices[p2], vertices[p2 + 1], vertices[p2 + 2]);
-      const v3 = import_gl_matrix4.vec3.fromValues(vertices[p3], vertices[p3 + 1], vertices[p3 + 2]);
-      const edge1 = import_gl_matrix4.vec3.create();
-      const edge2 = import_gl_matrix4.vec3.create();
-      import_gl_matrix4.vec3.subtract(edge1, v2, v1);
-      import_gl_matrix4.vec3.subtract(edge2, v3, v1);
-      const faceNormal = import_gl_matrix4.vec3.create();
-      import_gl_matrix4.vec3.cross(faceNormal, edge1, edge2);
-      import_gl_matrix4.vec3.normalize(faceNormal, faceNormal);
-      faceNormals.push(faceNormal);
-    }
-    for (let i = 0; i < indices.length; i++) {
-      const vertexIndex = indices[i];
-      import_gl_matrix4.vec3.add(vertexNormals[vertexIndex], vertexNormals[vertexIndex], faceNormals[Math.floor(i / 3)]);
-    }
-    vertexNormals.forEach((normal) => {
-      import_gl_matrix4.vec3.normalize(normal, normal);
-    });
-    return vertexNormals;
-  }
-};
-
-// src/entities/createTerrainEntity.ts
-async function createTerrainEntity(webGLContext, heightmap) {
+async function createTerrainEntity(webGLContext) {
+  const heightmap = TerrainUtils.generateHeightMap(300, 300, 0.05, 2, 0.6);
   const terrain = new Entity();
   const shaderProgram = new ShaderProgram(webGLContext);
-  await shaderProgram.initializeShaders("./shaders/terrain-vert-shader.vert", "./shaders/terrain-frag-shader.frag");
-  const brownColor = [0.6, 0.4, 0.2];
+  await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
   const terrainSizeX = heightmap[0].length;
   const terrainSizeZ = heightmap.length;
   const terrainScaleY = 4;
   const vertices = [];
   const indices = [];
-  const colors = [];
   for (let z = 0; z < terrainSizeZ; z++) {
     for (let x = 0; x < terrainSizeX; x++) {
       const height = heightmap[z][x] * terrainScaleY;
       vertices.push(x, height, z);
-      colors.push(...brownColor);
     }
   }
   for (let z = 0; z < terrainSizeZ - 1; z++) {
@@ -5389,16 +5346,30 @@ async function createTerrainEntity(webGLContext, heightmap) {
     }
   }
   const normals = TerrainUtils.computeVertexNormals(vertices, indices);
+  const materialComponent = new MaterialComponent(
+    import_gl_matrix5.vec3.fromValues(0.6, 0.4, 0.2),
+    0.8,
+    0.5
+  );
   const renderComponent = new RenderComponent(
     vertices,
     indices,
-    colors,
     normals,
     shaderProgram
   );
   terrain.addComponent("RenderComponent", renderComponent);
-  terrain.addComponent("LightingComponent", new LightingComponent(import_gl_matrix5.vec3.fromValues(1, 1, 1), 1));
-  terrain.addComponent("TransformComponent", new TransformComponent(import_gl_matrix5.vec3.fromValues(0, -2, 0)));
+  terrain.addComponent("MaterialComponent", materialComponent);
+  terrain.addComponent("LightComponent", new SpotLightComponent(
+    import_gl_matrix5.vec3.fromValues(1, 1, 1),
+    1,
+    import_gl_matrix5.vec3.fromValues(0, -10, 1),
+    import_gl_matrix5.vec3.fromValues(0, 1, 0),
+    1,
+    10,
+    10,
+    123
+  ));
+  terrain.addComponent("TransformComponent", new TransformComponent(import_gl_matrix5.vec3.fromValues(0, -10, 0)));
   return terrain;
 }
 
@@ -5490,10 +5461,10 @@ var OrbitCamera = class extends Camera {
     import_gl_matrix7.vec3.scaleAndAdd(this.position, this.position, right, -amount);
   }
   rotate(pitch, yaw) {
-    const pitchQuat = import_gl_matrix7.quat.create();
-    import_gl_matrix7.quat.setAxisAngle(pitchQuat, [1, 0, 0], pitch);
-    const yawQuat = import_gl_matrix7.quat.create();
-    import_gl_matrix7.quat.setAxisAngle(yawQuat, [0, 1, 0], yaw);
+    const right = import_gl_matrix7.vec3.transformQuat(import_gl_matrix7.vec3.create(), import_gl_matrix7.vec3.fromValues(1, 0, 0), this.orientation);
+    const pitchQuat = import_gl_matrix7.quat.setAxisAngle(import_gl_matrix7.quat.create(), right, pitch);
+    const worldUp = import_gl_matrix7.vec3.fromValues(0, 1, 0);
+    const yawQuat = import_gl_matrix7.quat.setAxisAngle(import_gl_matrix7.quat.create(), worldUp, yaw);
     import_gl_matrix7.quat.multiply(this.orientation, pitchQuat, this.orientation);
     import_gl_matrix7.quat.multiply(this.orientation, this.orientation, yawQuat);
     import_gl_matrix7.quat.normalize(this.orientation, this.orientation);
@@ -5565,7 +5536,7 @@ var LightingSystem = class extends System {
   async preload() {
   }
   update(deltaTime, entityManager) {
-    const entitiesWithLighting = entityManager.getEntitiesByComponent("LightingComponent");
+    const entitiesWithLighting = entityManager.getEntitiesByComponent("LightComponent");
     const entitiesWithRender = entityManager.getEntitiesByComponent("RenderComponent");
     entitiesWithRender.forEach((renderEntity) => {
       const renderComponent = renderEntity.getComponent("RenderComponent");
@@ -5576,7 +5547,7 @@ var LightingSystem = class extends System {
         return;
       let combinedLightColor = import_gl_matrix9.vec3.create();
       entitiesWithLighting.forEach((lightEntity) => {
-        const lightingComponent = lightEntity.getComponent("LightingComponent");
+        const lightingComponent = lightEntity.getComponent("LightComponent");
         if (!lightingComponent)
           return;
         const lightingTransformComponent = lightEntity.getComponent("TransformComponent");
@@ -5588,8 +5559,16 @@ var LightingSystem = class extends System {
         const lightDirection = import_gl_matrix9.vec3.create();
         import_gl_matrix9.vec3.subtract(lightDirection, renderTransformComponent.position, lightPosition);
         import_gl_matrix9.vec3.normalize(lightDirection, lightDirection);
-        import_gl_matrix9.vec3.scaleAndAdd(combinedLightColor, combinedLightColor, lightColor, lightIntensity);
-        lightingComponent.direction = lightDirection;
+        const lightDistance = import_gl_matrix9.vec3.distance(renderTransformComponent.position, lightPosition);
+        const attenuationFactor = 1 / (1 + lightDistance * lightIntensity);
+        if (lightingComponent instanceof SpotLightComponent) {
+          const lightCutoffAngle = lightingComponent.cutoffAngle;
+          const angleToLight = import_gl_matrix9.vec3.angle(lightDirection, renderTransformComponent.position);
+          if (angleToLight <= lightCutoffAngle) {
+            const spotlightIntensity = 1 - angleToLight / lightCutoffAngle;
+            import_gl_matrix9.vec3.scaleAndAdd(combinedLightColor, combinedLightColor, lightColor, spotlightIntensity * attenuationFactor);
+          }
+        }
         lightingComponent.combinedLightColor = combinedLightColor;
       });
     });
@@ -5620,21 +5599,24 @@ var RenderSystem = class extends System {
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
         return;
+      const materialComponent = entity.getComponent("MaterialComponent");
       renderComponent.shaderProgram.use();
-      const lightingComponent = entity.getComponent("LightingComponent");
-      if (lightingComponent) {
-        renderComponent.shaderProgram.setUniform3f("lightColor", lightingComponent.color);
-        renderComponent.shaderProgram.setUniform1f("lightIntensity", lightingComponent.intensity);
-        renderComponent.shaderProgram.setUniform3f("lightDirection", lightingComponent.direction);
-        renderComponent.shaderProgram.setUniform3f("ambientLightColor", lightingComponent.combinedLightColor);
+      const lightComponent = entity.getComponent("LightComponent");
+      if (lightComponent) {
+        renderComponent.shaderProgram.setUniform3f("lightColor", lightComponent.color);
+        renderComponent.shaderProgram.setUniform1f("lightIntensity", lightComponent.intensity);
+        renderComponent.shaderProgram.setUniform3f("lightDirection", lightComponent.direction);
+        renderComponent.shaderProgram.setUniform3f("ambientLightColor", lightComponent.combinedLightColor);
         renderComponent.shaderProgram.setUniform1f("ambientLightIntensity", 0.4);
+      }
+      if (materialComponent) {
+        renderComponent.shaderProgram.setUniform3f("materialColor", materialComponent.color);
       }
       this.bufferManager.bindBuffers(entity.id);
       if (renderComponent.normals.length > 0) {
         this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "normal", 3, this.gl.FLOAT, 0, 0);
       }
       this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
-      this.bufferManager.associateColorBufferWithAttribute(entity.id, renderComponent.shaderProgram, "color", 3, this.gl.FLOAT, 0, 0);
       this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
     });
   }
@@ -5681,8 +5663,7 @@ var main = async () => {
   try {
     const window = new WebGLCanvas(800, 800);
     const entityManager = new EntityManager();
-    const heightmap = TerrainUtils.generateHeightMap(100, 100, 0.02, 1, 42);
-    const terrain = await createTerrainEntity(window.gl, heightmap);
+    const terrain = await createTerrainEntity(window.gl);
     const cube = await createCubeEntity(window.gl);
     entityManager.addEntities([terrain, cube]);
     const game = new Game(entityManager);
