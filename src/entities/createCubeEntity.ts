@@ -14,7 +14,7 @@ export async function createCubeEntity(webGLContext: WebGL2RenderingContext): Pr
   const shaderProgram = new ShaderProgram(webGLContext);
   await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
 
-  const { vertices, indices, normals, uvs } = MeshUtils.generateCubeMesh(2);
+  const { vertices, indices, normals, uvs } = MeshUtils.generateCubeMesh(20);
 
   const renderComponent = new RenderComponent(
     vertices,
@@ -26,7 +26,6 @@ export async function createCubeEntity(webGLContext: WebGL2RenderingContext): Pr
 
   const textureSrc = "./assets/textures/short_bricks_floor_disp_1k.png";
   const texture = await TextureUtils.loadTexture(webGLContext, textureSrc);
-  console.log(texture);
   const materialComponent = new MaterialComponent(
     vec3.fromValues(1.0, 1.0, 1.0),
     0.8,
@@ -46,7 +45,7 @@ export async function createCubeEntity(webGLContext: WebGL2RenderingContext): Pr
     141
   ));
   cube.addComponent("MaterialComponent", materialComponent);
-  cube.addComponent("TransformComponent", new TransformComponent(vec3.fromValues(0, 0.035, 0)));
+  cube.addComponent("TransformComponent", new TransformComponent(vec3.fromValues(0, 3, 0)));
 
   return cube;
 }

@@ -1,6 +1,25 @@
 import { vec2, vec3 } from "gl-matrix";
 
 export class TerrainUtils {
+  private static fractalBrownianMotion(x: number, y: number, octaves: number, lacunarity: number, persistence: number): number {
+    let frequency = 1.0;
+    let amplitude = 1.0;
+    let noiseValue = 0;
+
+    for (let o = 0; o < octaves; o++) {
+      const xCoord = x * frequency;
+      const yCoord = y * frequency;
+      const noise = this.perlin(xCoord, yCoord); // Implement your own Perlin noise function
+
+      noiseValue += noise * amplitude;
+
+      frequency *= lacunarity;
+      amplitude *= persistence;
+    }
+
+    return noiseValue;
+  }
+
   static generateHeightMap(width: number, height: number, frequency: number, amplitude: number, octaves: number) {
     const heightMap = new Array(height).fill(0).map(() => new Array(width).fill(0));
 
@@ -13,7 +32,7 @@ export class TerrainUtils {
         for (let o = 0; o < octaves; o++) {
           const xCoord = x * frequencyTemp;
           const yCoord = y * frequencyTemp;
-          const noise = this.perlin(xCoord, yCoord); // Implement your own Perlin noise function
+          const noise = this.fractalBrownianMotion(xCoord, yCoord, octaves, 2.0, 0.6); // Implement your own Perlin noise function
 
           noiseValue += noise * amplitudeTemp;
 
@@ -21,8 +40,7 @@ export class TerrainUtils {
           amplitudeTemp *= 0.5;
         }
 
-        // Ensure the height value is between -1 and 1
-        noiseValue = Math.max(0, noiseValue);
+        noiseValue = noiseValue * 2 - 1;
 
         heightMap[y][x] = noiseValue;
       }

@@ -3307,7 +3307,7 @@ var require_quat = __commonJS({
     exports.setAxes = exports.sqlerp = exports.rotationTo = exports.equals = exports.exactEquals = exports.normalize = exports.sqrLen = exports.squaredLength = exports.len = exports.length = exports.lerp = exports.dot = exports.scale = exports.mul = exports.add = exports.set = exports.copy = exports.fromValues = exports.clone = void 0;
     var glMatrix = _interopRequireWildcard(require_common());
     var mat3 = _interopRequireWildcard(require_mat3());
-    var vec310 = _interopRequireWildcard(require_vec3());
+    var vec311 = _interopRequireWildcard(require_vec3());
     var vec4 = _interopRequireWildcard(require_vec4());
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
@@ -3601,16 +3601,16 @@ var require_quat = __commonJS({
     var equals = vec4.equals;
     exports.equals = equals;
     var rotationTo = function() {
-      var tmpvec3 = vec310.create();
-      var xUnitVec3 = vec310.fromValues(1, 0, 0);
-      var yUnitVec3 = vec310.fromValues(0, 1, 0);
+      var tmpvec3 = vec311.create();
+      var xUnitVec3 = vec311.fromValues(1, 0, 0);
+      var yUnitVec3 = vec311.fromValues(0, 1, 0);
       return function(out, a, b) {
-        var dot2 = vec310.dot(a, b);
+        var dot2 = vec311.dot(a, b);
         if (dot2 < -0.999999) {
-          vec310.cross(tmpvec3, xUnitVec3, a);
-          if (vec310.len(tmpvec3) < 1e-6)
-            vec310.cross(tmpvec3, yUnitVec3, a);
-          vec310.normalize(tmpvec3, tmpvec3);
+          vec311.cross(tmpvec3, xUnitVec3, a);
+          if (vec311.len(tmpvec3) < 1e-6)
+            vec311.cross(tmpvec3, yUnitVec3, a);
+          vec311.normalize(tmpvec3, tmpvec3);
           setAxisAngle(out, tmpvec3, Math.PI);
           return out;
         } else if (dot2 > 0.999999) {
@@ -3620,7 +3620,7 @@ var require_quat = __commonJS({
           out[3] = 1;
           return out;
         } else {
-          vec310.cross(tmpvec3, a, b);
+          vec311.cross(tmpvec3, a, b);
           out[0] = tmpvec3[0];
           out[1] = tmpvec3[1];
           out[2] = tmpvec3[2];
@@ -3714,7 +3714,7 @@ var require_quat2 = __commonJS({
     exports.sqrLen = exports.squaredLength = exports.len = exports.length = exports.dot = exports.mul = exports.setReal = exports.getReal = void 0;
     var glMatrix = _interopRequireWildcard(require_common());
     var quat5 = _interopRequireWildcard(require_quat());
-    var mat45 = _interopRequireWildcard(require_mat4());
+    var mat46 = _interopRequireWildcard(require_mat4());
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -3840,9 +3840,9 @@ var require_quat2 = __commonJS({
     }
     function fromMat4(out, a) {
       var outer = quat5.create();
-      mat45.getRotation(outer, a);
+      mat46.getRotation(outer, a);
       var t = new glMatrix.ARRAY_TYPE(3);
-      mat45.getTranslation(t, a);
+      mat46.getTranslation(t, a);
       fromRotationTranslation(out, outer, t);
       return out;
     }
@@ -4494,16 +4494,16 @@ var require_cjs = __commonJS({
     exports.mat2d = mat2d;
     var mat3 = _interopRequireWildcard(require_mat3());
     exports.mat3 = mat3;
-    var mat45 = _interopRequireWildcard(require_mat4());
-    exports.mat4 = mat45;
+    var mat46 = _interopRequireWildcard(require_mat4());
+    exports.mat4 = mat46;
     var quat5 = _interopRequireWildcard(require_quat());
     exports.quat = quat5;
     var quat22 = _interopRequireWildcard(require_quat2());
     exports.quat2 = quat22;
     var vec22 = _interopRequireWildcard(require_vec2());
     exports.vec2 = vec22;
-    var vec310 = _interopRequireWildcard(require_vec3());
-    exports.vec3 = vec310;
+    var vec311 = _interopRequireWildcard(require_vec3());
+    exports.vec3 = vec311;
     var vec4 = _interopRequireWildcard(require_vec4());
     exports.vec4 = vec4;
     function _getRequireWildcardCache(nodeInterop) {
@@ -4548,7 +4548,7 @@ var require_cjs = __commonJS({
 });
 
 // src/main.ts
-var import_gl_matrix10 = __toESM(require_cjs());
+var import_gl_matrix12 = __toESM(require_cjs());
 
 // src/Game.ts
 var Game = class {
@@ -4814,6 +4814,60 @@ var BufferManager = class {
   }
 };
 
+// src/cameras/FirstPersonCamera.ts
+var import_gl_matrix2 = __toESM(require_cjs());
+
+// src/cameras/Camera.ts
+var import_gl_matrix = __toESM(require_cjs());
+var Camera = class {
+  constructor(position, orientation) {
+    this.position = position;
+    this.orientation = orientation;
+  }
+  getViewMatrix() {
+    const viewMatrix = import_gl_matrix.mat4.create();
+    const inverseCameraPosition = import_gl_matrix.vec3.create();
+    import_gl_matrix.vec3.negate(inverseCameraPosition, this.position);
+    import_gl_matrix.mat4.translate(viewMatrix, viewMatrix, inverseCameraPosition);
+    const cameraRotationMat = import_gl_matrix.mat4.create();
+    import_gl_matrix.mat4.fromQuat(cameraRotationMat, this.orientation);
+    import_gl_matrix.mat4.multiply(viewMatrix, viewMatrix, cameraRotationMat);
+    import_gl_matrix.mat4.invert(viewMatrix, viewMatrix);
+    return viewMatrix;
+  }
+};
+
+// src/cameras/FirstPersonCamera.ts
+var FirstPersonCamera = class extends Camera {
+  constructor(position, orientation, mouseSensitivity = 0.2) {
+    super(position, orientation);
+    this.mouseSensitivity = mouseSensitivity;
+  }
+  moveForward(amount) {
+    const forwardDirection = import_gl_matrix2.vec3.transformQuat(import_gl_matrix2.vec3.create(), import_gl_matrix2.vec3.fromValues(0, 0, -1), this.orientation);
+    import_gl_matrix2.vec3.scaleAndAdd(this.position, this.position, forwardDirection, -amount);
+  }
+  moveBackward(amount) {
+    const backwardDirection = import_gl_matrix2.vec3.transformQuat(import_gl_matrix2.vec3.create(), import_gl_matrix2.vec3.fromValues(0, 0, 1), this.orientation);
+    import_gl_matrix2.vec3.scaleAndAdd(this.position, this.position, backwardDirection, -amount);
+  }
+  moveLeft(amount) {
+    const right = import_gl_matrix2.vec3.transformQuat(import_gl_matrix2.vec3.create(), import_gl_matrix2.vec3.fromValues(1, 0, 0), this.orientation);
+    import_gl_matrix2.vec3.scaleAndAdd(this.position, this.position, right, amount);
+  }
+  moveRight(amount) {
+    const right = import_gl_matrix2.vec3.transformQuat(import_gl_matrix2.vec3.create(), import_gl_matrix2.vec3.fromValues(1, 0, 0), this.orientation);
+    import_gl_matrix2.vec3.scaleAndAdd(this.position, this.position, right, -amount);
+  }
+  rotate(pitch, yaw) {
+    const pitchQuat = import_gl_matrix2.quat.setAxisAngle(import_gl_matrix2.quat.create(), [1, 0, 0], pitch * this.mouseSensitivity);
+    const yawQuat = import_gl_matrix2.quat.setAxisAngle(import_gl_matrix2.quat.create(), [0, 1, 0], yaw * this.mouseSensitivity);
+    import_gl_matrix2.quat.multiply(this.orientation, this.orientation, pitchQuat);
+    import_gl_matrix2.quat.multiply(this.orientation, yawQuat, this.orientation);
+    import_gl_matrix2.quat.normalize(this.orientation, this.orientation);
+  }
+};
+
 // src/entities/EntityManager.ts
 var EntityManager = class {
   constructor() {
@@ -4849,7 +4903,7 @@ var EntityManager = class {
 };
 
 // src/entities/createCubeEntity.ts
-var import_gl_matrix4 = __toESM(require_cjs());
+var import_gl_matrix6 = __toESM(require_cjs());
 
 // src/ShaderProgram.ts
 var ShaderProgram = class {
@@ -5005,75 +5059,67 @@ var RenderComponent = class extends Component {
 };
 
 // src/components/TransformComponent.ts
-var import_gl_matrix = __toESM(require_cjs());
+var import_gl_matrix3 = __toESM(require_cjs());
 var TransformComponent = class extends Component {
-  constructor(position = import_gl_matrix.vec3.create(), rotation = import_gl_matrix.quat.create(), scale = import_gl_matrix.vec3.fromValues(1, 1, 1)) {
+  constructor(position = import_gl_matrix3.vec3.create(), rotation = import_gl_matrix3.quat.create(), scale = import_gl_matrix3.vec3.fromValues(1, 1, 1)) {
     super("TransformComponent");
-    this.modelMatrix = import_gl_matrix.mat4.create();
+    this.modelMatrix = import_gl_matrix3.mat4.create();
     this.position = position;
     this.rotation = rotation;
     this.scale = scale;
   }
-  getModelMatrix() {
-    import_gl_matrix.mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
-    import_gl_matrix.mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotation[0]);
-    import_gl_matrix.mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotation[1]);
-    import_gl_matrix.mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2]);
-    import_gl_matrix.mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
-    return this.modelMatrix;
-  }
   moveForward(distance) {
-    const forward = import_gl_matrix.vec3.fromValues(0, 0, 1);
-    import_gl_matrix.vec3.transformQuat(forward, forward, this.rotation);
-    import_gl_matrix.vec3.scaleAndAdd(this.position, this.position, forward, distance);
+    const forward = import_gl_matrix3.vec3.fromValues(0, 0, 1);
+    import_gl_matrix3.vec3.transformQuat(forward, forward, this.rotation);
+    import_gl_matrix3.vec3.scaleAndAdd(this.position, this.position, forward, distance);
   }
   moveBackward(distance) {
-    const backward = import_gl_matrix.vec3.fromValues(0, 0, -1);
-    import_gl_matrix.vec3.transformQuat(backward, backward, this.rotation);
-    import_gl_matrix.vec3.scaleAndAdd(this.position, this.position, backward, distance);
+    const backward = import_gl_matrix3.vec3.fromValues(0, 0, -1);
+    import_gl_matrix3.vec3.transformQuat(backward, backward, this.rotation);
+    import_gl_matrix3.vec3.scaleAndAdd(this.position, this.position, backward, distance);
   }
   moveLeft(distance) {
-    const left = import_gl_matrix.vec3.fromValues(1, 0, 0);
-    import_gl_matrix.vec3.transformQuat(left, left, this.rotation);
-    import_gl_matrix.vec3.scaleAndAdd(this.position, this.position, left, distance);
+    const left = import_gl_matrix3.vec3.fromValues(1, 0, 0);
+    import_gl_matrix3.vec3.transformQuat(left, left, this.rotation);
+    import_gl_matrix3.vec3.scaleAndAdd(this.position, this.position, left, distance);
   }
   moveRight(distance) {
-    const right = import_gl_matrix.vec3.fromValues(-1, 0, 0);
-    import_gl_matrix.vec3.transformQuat(right, right, this.rotation);
-    import_gl_matrix.vec3.scaleAndAdd(this.position, this.position, right, distance);
+    const right = import_gl_matrix3.vec3.fromValues(-1, 0, 0);
+    import_gl_matrix3.vec3.transformQuat(right, right, this.rotation);
+    import_gl_matrix3.vec3.scaleAndAdd(this.position, this.position, right, distance);
   }
   rotateX(angle) {
-    import_gl_matrix.quat.rotateX(this.rotation, this.rotation, angle);
+    import_gl_matrix3.quat.rotateX(this.rotation, this.rotation, angle);
   }
   rotateY(angle) {
-    import_gl_matrix.quat.rotateY(this.rotation, this.rotation, angle);
+    import_gl_matrix3.quat.rotateY(this.rotation, this.rotation, angle);
   }
   rotateZ(angle) {
-    import_gl_matrix.quat.rotateZ(this.rotation, this.rotation, angle);
+    import_gl_matrix3.quat.rotateZ(this.rotation, this.rotation, angle);
   }
   getRotationQuat() {
-    const quatX = import_gl_matrix.quat.create();
-    const quatY = import_gl_matrix.quat.create();
-    const quatZ = import_gl_matrix.quat.create();
-    import_gl_matrix.quat.setAxisAngle(quatX, [1, 0, 0], this.rotation[0]);
-    import_gl_matrix.quat.setAxisAngle(quatY, [0, 1, 0], this.rotation[1]);
-    import_gl_matrix.quat.setAxisAngle(quatZ, [0, 0, 1], this.rotation[2]);
-    const resultQuat = import_gl_matrix.quat.create();
-    import_gl_matrix.quat.multiply(resultQuat, quatY, quatX);
-    import_gl_matrix.quat.multiply(resultQuat, quatZ, resultQuat);
+    const quatX = import_gl_matrix3.quat.create();
+    const quatY = import_gl_matrix3.quat.create();
+    const quatZ = import_gl_matrix3.quat.create();
+    import_gl_matrix3.quat.setAxisAngle(quatX, [1, 0, 0], this.rotation[0]);
+    import_gl_matrix3.quat.setAxisAngle(quatY, [0, 1, 0], this.rotation[1]);
+    import_gl_matrix3.quat.setAxisAngle(quatZ, [0, 0, 1], this.rotation[2]);
+    const resultQuat = import_gl_matrix3.quat.create();
+    import_gl_matrix3.quat.multiply(resultQuat, quatY, quatX);
+    import_gl_matrix3.quat.multiply(resultQuat, quatZ, resultQuat);
     return resultQuat;
   }
 };
 
 // src/components/lights/LightComponent.ts
-var import_gl_matrix2 = __toESM(require_cjs());
+var import_gl_matrix4 = __toESM(require_cjs());
 var LightComponent = class extends Component {
   // Type identifier for the light (e.g., "point", "directional", "spot")
   constructor(color, intensity, type) {
     super("LightComponent");
     // The intensity/brightness of the light
-    this.direction = import_gl_matrix2.vec3.create();
-    this.combinedLightColor = import_gl_matrix2.vec3.create();
+    this.direction = import_gl_matrix4.vec3.create();
+    this.combinedLightColor = import_gl_matrix4.vec3.create();
     this.color = color;
     this.intensity = intensity;
     this.type = type;
@@ -5094,8 +5140,22 @@ var SpotLightComponent = class extends LightComponent {
 };
 
 // src/utils/TerrainUtils.ts
-var import_gl_matrix3 = __toESM(require_cjs());
+var import_gl_matrix5 = __toESM(require_cjs());
 var TerrainUtils = class {
+  static fractalBrownianMotion(x, y, octaves, lacunarity, persistence) {
+    let frequency = 1;
+    let amplitude = 1;
+    let noiseValue = 0;
+    for (let o = 0; o < octaves; o++) {
+      const xCoord = x * frequency;
+      const yCoord = y * frequency;
+      const noise = this.perlin(xCoord, yCoord);
+      noiseValue += noise * amplitude;
+      frequency *= lacunarity;
+      amplitude *= persistence;
+    }
+    return noiseValue;
+  }
   static generateHeightMap(width, height, frequency, amplitude, octaves) {
     const heightMap = new Array(height).fill(0).map(() => new Array(width).fill(0));
     for (let y = 0; y < height; y++) {
@@ -5106,12 +5166,12 @@ var TerrainUtils = class {
         for (let o = 0; o < octaves; o++) {
           const xCoord = x * frequencyTemp;
           const yCoord = y * frequencyTemp;
-          const noise = this.perlin(xCoord, yCoord);
+          const noise = this.fractalBrownianMotion(xCoord, yCoord, octaves, 2, 0.6);
           noiseValue += noise * amplitudeTemp;
           frequencyTemp *= 2;
           amplitudeTemp *= 0.5;
         }
-        noiseValue = Math.max(0, noiseValue);
+        noiseValue = noiseValue * 2 - 1;
         heightMap[y][x] = noiseValue;
       }
     }
@@ -5162,29 +5222,29 @@ var TerrainUtils = class {
   }
   static computeVertexNormals(vertices, indices) {
     const faceNormals = [];
-    const vertexNormals = new Array(vertices.length / 3).fill(import_gl_matrix3.vec3.create());
+    const vertexNormals = new Array(vertices.length / 3).fill(import_gl_matrix5.vec3.create());
     for (let i = 0; i < indices.length; i += 3) {
       const p1 = indices[i] * 3;
       const p2 = indices[i + 1] * 3;
       const p3 = indices[i + 2] * 3;
-      const v1 = import_gl_matrix3.vec3.fromValues(vertices[p1], vertices[p1 + 1], vertices[p1 + 2]);
-      const v2 = import_gl_matrix3.vec3.fromValues(vertices[p2], vertices[p2 + 1], vertices[p2 + 2]);
-      const v3 = import_gl_matrix3.vec3.fromValues(vertices[p3], vertices[p3 + 1], vertices[p3 + 2]);
-      const edge1 = import_gl_matrix3.vec3.create();
-      const edge2 = import_gl_matrix3.vec3.create();
-      import_gl_matrix3.vec3.subtract(edge1, v2, v1);
-      import_gl_matrix3.vec3.subtract(edge2, v3, v1);
-      const faceNormal = import_gl_matrix3.vec3.create();
-      import_gl_matrix3.vec3.cross(faceNormal, edge1, edge2);
-      import_gl_matrix3.vec3.normalize(faceNormal, faceNormal);
+      const v1 = import_gl_matrix5.vec3.fromValues(vertices[p1], vertices[p1 + 1], vertices[p1 + 2]);
+      const v2 = import_gl_matrix5.vec3.fromValues(vertices[p2], vertices[p2 + 1], vertices[p2 + 2]);
+      const v3 = import_gl_matrix5.vec3.fromValues(vertices[p3], vertices[p3 + 1], vertices[p3 + 2]);
+      const edge1 = import_gl_matrix5.vec3.create();
+      const edge2 = import_gl_matrix5.vec3.create();
+      import_gl_matrix5.vec3.subtract(edge1, v2, v1);
+      import_gl_matrix5.vec3.subtract(edge2, v3, v1);
+      const faceNormal = import_gl_matrix5.vec3.create();
+      import_gl_matrix5.vec3.cross(faceNormal, edge1, edge2);
+      import_gl_matrix5.vec3.normalize(faceNormal, faceNormal);
       faceNormals.push(faceNormal);
     }
     for (let i = 0; i < indices.length; i++) {
       const vertexIndex = indices[i];
-      import_gl_matrix3.vec3.add(vertexNormals[vertexIndex], vertexNormals[vertexIndex], faceNormals[Math.floor(i / 3)]);
+      import_gl_matrix5.vec3.add(vertexNormals[vertexIndex], vertexNormals[vertexIndex], faceNormals[Math.floor(i / 3)]);
     }
     vertexNormals.forEach((normal) => {
-      import_gl_matrix3.vec3.normalize(normal, normal);
+      import_gl_matrix5.vec3.normalize(normal, normal);
     });
     return vertexNormals;
   }
@@ -5193,7 +5253,7 @@ var TerrainUtils = class {
 // src/utils/MeshUtils.ts
 var MeshUtils = class {
   static generateGridMesh(rows, cols) {
-    const heightmap = TerrainUtils.generateHeightMap(rows, cols, 0.05, 2, 0.6);
+    const heightmap = TerrainUtils.generateHeightMap(rows, cols, 0.02, 1, 0.6);
     const terrainSizeX = heightmap[0].length;
     const terrainSizeZ = heightmap.length;
     const terrainScaleY = 4;
@@ -5216,7 +5276,7 @@ var MeshUtils = class {
       }
     }
     const normals = TerrainUtils.computeVertexNormals(vertices, indices);
-    const uvs = this.generateCubeUVs();
+    const uvs = this.generateTerrainUVs(rows, cols);
     return { vertices, indices, normals, uvs };
   }
   static generateCubeMesh(size) {
@@ -5349,6 +5409,17 @@ var MeshUtils = class {
     const uvs = this.generateCubeUVs();
     return { vertices, indices, normals, uvs };
   }
+  static generateTerrainUVs(width, length) {
+    const uvs = [];
+    for (let z = 0; z <= length; z++) {
+      for (let x = 0; x <= width; x++) {
+        const u = x / width;
+        const v = z / length;
+        uvs.push(u, v);
+      }
+    }
+    return uvs;
+  }
   static generateCubeUVs() {
     return [
       // Front
@@ -5406,7 +5477,6 @@ var MeshUtils = class {
       0,
       1
     ];
-    ;
   }
 };
 
@@ -5426,6 +5496,73 @@ var TextureUtils = class {
       };
       image.onerror = reject;
       image.src = imageSrc;
+    });
+  }
+  static async loadTextures(gl, imageSrcList) {
+    return new Promise((resolve, reject) => {
+      const textures = [];
+      for (const imageSrc of imageSrcList) {
+        const texture = gl.createTexture();
+        if (!texture)
+          return reject();
+        const image = new Image();
+        image.onload = () => {
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+          gl.generateMipmap(gl.TEXTURE_2D);
+          textures.push(texture);
+        };
+        image.onerror = reject;
+        image.src = imageSrc;
+      }
+      if (textures.length === imageSrcList.length) {
+        return resolve(textures);
+      }
+    });
+  }
+  static async loadCubeMapTexture(gl, imageSrcList) {
+    return new Promise((resolve, reject) => {
+      const texture = gl.createTexture();
+      if (!texture)
+        return reject("Failed to create WebGL texture.");
+      gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+      gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      if (imageSrcList.length !== 6) {
+        return reject("You must provide exactly 6 images for the cube map.");
+      }
+      const images = [];
+      let loadedImages = 0;
+      for (let i = 0; i < imageSrcList.length; i++) {
+        const image = new Image();
+        image.onload = () => {
+          images[i] = image;
+          loadedImages++;
+          if (loadedImages === 6) {
+            for (let face = 0; face < 6; face++) {
+              gl.texImage2D(
+                gl.TEXTURE_CUBE_MAP_POSITIVE_X + face,
+                // Cube map face
+                0,
+                // Level
+                gl.RGBA,
+                // Internal format
+                gl.RGBA,
+                // Format
+                gl.UNSIGNED_BYTE,
+                // Type
+                images[face]
+                // Image data
+              );
+            }
+            resolve(texture);
+          }
+        };
+        image.onerror = () => reject(`Failed to load image: ${imageSrcList[i]}`);
+        image.src = imageSrcList[i];
+      }
     });
   }
 };
@@ -5462,7 +5599,7 @@ async function createCubeEntity(webGLContext) {
   const cube = new Entity();
   const shaderProgram = new ShaderProgram(webGLContext);
   await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
-  const { vertices, indices, normals, uvs } = MeshUtils.generateCubeMesh(2);
+  const { vertices, indices, normals, uvs } = MeshUtils.generateCubeMesh(20);
   const renderComponent = new RenderComponent(
     vertices,
     indices,
@@ -5472,40 +5609,80 @@ async function createCubeEntity(webGLContext) {
   );
   const textureSrc = "./assets/textures/short_bricks_floor_disp_1k.png";
   const texture = await TextureUtils.loadTexture(webGLContext, textureSrc);
-  console.log(texture);
   const materialComponent = new MaterialComponent(
-    import_gl_matrix4.vec3.fromValues(1, 1, 1),
+    import_gl_matrix6.vec3.fromValues(1, 1, 1),
     0.8,
     1,
     texture
   );
   cube.addComponent("RenderComponent", renderComponent);
   cube.addComponent("LightComponent", new SpotLightComponent(
-    import_gl_matrix4.vec3.fromValues(1, 1, 1),
+    import_gl_matrix6.vec3.fromValues(1, 1, 1),
     1,
-    import_gl_matrix4.vec3.fromValues(-1, -1, -1),
-    import_gl_matrix4.vec3.fromValues(1, 1, 1),
+    import_gl_matrix6.vec3.fromValues(-1, -1, -1),
+    import_gl_matrix6.vec3.fromValues(1, 1, 1),
     121,
     0.8,
     0.8,
     141
   ));
   cube.addComponent("MaterialComponent", materialComponent);
-  cube.addComponent("TransformComponent", new TransformComponent(import_gl_matrix4.vec3.fromValues(0, 0.035, 0)));
+  cube.addComponent("TransformComponent", new TransformComponent(import_gl_matrix6.vec3.fromValues(0, 3, 0)));
   return cube;
 }
 
+// src/entities/createSkyBox.ts
+var import_gl_matrix7 = __toESM(require_cjs());
+
+// src/components/SkyboxComponent.ts
+var SkyboxComponent = class extends Component {
+  constructor() {
+    super("SkyboxComponent");
+  }
+};
+
+// src/entities/createSkyBox.ts
+async function createSkybox(webGLContext) {
+  const skybox = new Entity();
+  const shaderProgram = new ShaderProgram(webGLContext);
+  await shaderProgram.initializeShaders("./shaders/skybox-vert-shader.vert", "./shaders/skybox-frag-shader.frag");
+  const { vertices, indices, normals, uvs } = MeshUtils.generateCubeMesh(1e3);
+  const renderComponent = new RenderComponent(vertices, indices, normals, uvs, shaderProgram);
+  const textureSrcList = [
+    "./assets/skybox/miramar_rt.png",
+    "./assets/skybox/miramar_lf.png",
+    "./assets/skybox/miramar_up.png",
+    "./assets/skybox/miramar_dn.png",
+    "./assets/skybox/miramar_bk.png",
+    "./assets/skybox/miramar_ft.png"
+  ];
+  const texture = await TextureUtils.loadCubeMapTexture(webGLContext, textureSrcList);
+  const materialComponent = new MaterialComponent(
+    import_gl_matrix7.vec3.fromValues(1, 1, 1),
+    0.8,
+    1,
+    texture
+  );
+  skybox.addComponent("SkyboxComponent", new SkyboxComponent());
+  skybox.addComponent("RenderComponent", renderComponent);
+  skybox.addComponent("MaterialComponent", materialComponent);
+  return skybox;
+}
+
 // src/entities/createTerrainEntity.ts
-var import_gl_matrix5 = __toESM(require_cjs());
+var import_gl_matrix8 = __toESM(require_cjs());
 async function createTerrainEntity(webGLContext) {
   const terrain = new Entity();
   const shaderProgram = new ShaderProgram(webGLContext);
   await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
   const { vertices, indices, normals, uvs } = MeshUtils.generateGridMesh(200, 200);
+  const textureSrc = "./assets/textures/rocky_trail_disp_4k.png";
+  const texture = await TextureUtils.loadTexture(webGLContext, textureSrc);
   const materialComponent = new MaterialComponent(
-    import_gl_matrix5.vec3.fromValues(0.6, 0.4, 0.2),
+    import_gl_matrix8.vec3.fromValues(0.6, 0.4, 0.2),
     0.8,
-    0.5
+    0.5,
+    texture
   );
   const renderComponent = new RenderComponent(
     vertices,
@@ -5517,21 +5694,21 @@ async function createTerrainEntity(webGLContext) {
   terrain.addComponent("RenderComponent", renderComponent);
   terrain.addComponent("MaterialComponent", materialComponent);
   terrain.addComponent("LightComponent", new SpotLightComponent(
-    import_gl_matrix5.vec3.fromValues(1, 1, 1),
+    import_gl_matrix8.vec3.fromValues(1, 1, 1),
     1,
-    import_gl_matrix5.vec3.fromValues(0, -10, 1),
-    import_gl_matrix5.vec3.fromValues(0, 1, 0),
+    import_gl_matrix8.vec3.fromValues(0, -10, 1),
+    import_gl_matrix8.vec3.fromValues(0, 1, 0),
     1,
     10,
     10,
     123
   ));
-  terrain.addComponent("TransformComponent", new TransformComponent(import_gl_matrix5.vec3.fromValues(0, -10, 0)));
+  terrain.addComponent("TransformComponent", new TransformComponent(import_gl_matrix8.vec3.fromValues(0, -10, 0)));
   return terrain;
 }
 
 // src/systems/CameraSystem.ts
-var import_gl_matrix8 = __toESM(require_cjs());
+var import_gl_matrix9 = __toESM(require_cjs());
 
 // src/InputManager.ts
 var InputManager = class {
@@ -5576,77 +5753,25 @@ var InputManager = class {
   }
 };
 
-// src/cameras/OrbitCamera.ts
-var import_gl_matrix7 = __toESM(require_cjs());
-
-// src/cameras/Camera.ts
-var import_gl_matrix6 = __toESM(require_cjs());
-var Camera = class {
-  constructor(position, orientation) {
-    this.position = position;
-    this.orientation = orientation;
-  }
-  getViewMatrix() {
-    const viewMatrix = import_gl_matrix6.mat4.create();
-    const inverseCameraPosition = import_gl_matrix6.vec3.create();
-    import_gl_matrix6.vec3.negate(inverseCameraPosition, this.position);
-    import_gl_matrix6.mat4.translate(viewMatrix, viewMatrix, inverseCameraPosition);
-    const cameraRotationMat = import_gl_matrix6.mat4.create();
-    import_gl_matrix6.mat4.fromQuat(cameraRotationMat, this.orientation);
-    import_gl_matrix6.mat4.multiply(viewMatrix, viewMatrix, cameraRotationMat);
-    import_gl_matrix6.mat4.invert(viewMatrix, viewMatrix);
-    return viewMatrix;
-  }
-};
-
-// src/cameras/OrbitCamera.ts
-var OrbitCamera = class extends Camera {
-  moveForward(amount) {
-    const forwardDirection = import_gl_matrix7.vec3.transformQuat(import_gl_matrix7.vec3.create(), import_gl_matrix7.vec3.fromValues(0, 0, -1), this.orientation);
-    import_gl_matrix7.vec3.scaleAndAdd(this.position, this.position, forwardDirection, -amount);
-  }
-  moveBackward(amount) {
-    const backwardDirection = import_gl_matrix7.vec3.transformQuat(import_gl_matrix7.vec3.create(), import_gl_matrix7.vec3.fromValues(0, 0, 1), this.orientation);
-    import_gl_matrix7.vec3.scaleAndAdd(this.position, this.position, backwardDirection, -amount);
-  }
-  moveLeft(amount) {
-    const right = import_gl_matrix7.vec3.transformQuat(import_gl_matrix7.vec3.create(), import_gl_matrix7.vec3.fromValues(1, 0, 0), this.orientation);
-    import_gl_matrix7.vec3.scaleAndAdd(this.position, this.position, right, amount);
-  }
-  moveRight(amount) {
-    const right = import_gl_matrix7.vec3.transformQuat(import_gl_matrix7.vec3.create(), import_gl_matrix7.vec3.fromValues(1, 0, 0), this.orientation);
-    import_gl_matrix7.vec3.scaleAndAdd(this.position, this.position, right, -amount);
-  }
-  rotate(pitch, yaw) {
-    const right = import_gl_matrix7.vec3.transformQuat(import_gl_matrix7.vec3.create(), import_gl_matrix7.vec3.fromValues(1, 0, 0), this.orientation);
-    const pitchQuat = import_gl_matrix7.quat.setAxisAngle(import_gl_matrix7.quat.create(), right, pitch);
-    const worldUp = import_gl_matrix7.vec3.fromValues(0, 1, 0);
-    const yawQuat = import_gl_matrix7.quat.setAxisAngle(import_gl_matrix7.quat.create(), worldUp, yaw);
-    import_gl_matrix7.quat.multiply(this.orientation, pitchQuat, this.orientation);
-    import_gl_matrix7.quat.multiply(this.orientation, this.orientation, yawQuat);
-    import_gl_matrix7.quat.normalize(this.orientation, this.orientation);
-  }
-};
-
 // src/systems/System.ts
 var System = class {
 };
 
 // src/systems/CameraSystem.ts
 var CameraSystem = class extends System {
-  constructor(mouseSensitivity, projectionMatrix, canvas, moveSpeed = 0.1) {
+  constructor(mouseSensitivity, projectionMatrix, canvas, camera, moveSpeed = 5) {
     super();
     this.prevMouseX = 0;
     this.prevMouseY = 0;
     this.inputManager = new InputManager();
     this.moveSpeed = moveSpeed;
-    this.camera = new OrbitCamera(import_gl_matrix8.vec3.fromValues(0, 0, -5), import_gl_matrix8.quat.create());
+    this.camera = camera;
     this.mouseSensitivity = mouseSensitivity;
     this.projectionMatrix = projectionMatrix;
     this.canvas = canvas;
   }
   async preload() {
-    import_gl_matrix8.mat4.perspective(this.projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
+    import_gl_matrix9.mat4.perspective(this.projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 1e4);
   }
   update() {
     this.handleInput();
@@ -5687,8 +5812,33 @@ var CameraSystem = class extends System {
   }
 };
 
+// src/systems/CollisionSystem.ts
+var CollisionSystem = class extends System {
+  async preload() {
+  }
+  update(_, entityManager) {
+    const collisionEntities = entityManager.getEntitiesByComponents(["CollisionComponent", "TransformComponent"]);
+    for (let i = 0; i < collisionEntities.length; i++) {
+      const entityA = collisionEntities[i];
+      for (let j = i + 1; j < collisionEntities.length; j++) {
+        const entityB = collisionEntities[j];
+        if (this.checkCollision(entityA, entityB)) {
+          this.resolveCollision();
+        }
+      }
+    }
+  }
+  render() {
+  }
+  checkCollision(entityA, entityB) {
+    return false;
+  }
+  resolveCollision() {
+  }
+};
+
 // src/systems/LightingSystem.ts
-var import_gl_matrix9 = __toESM(require_cjs());
+var import_gl_matrix10 = __toESM(require_cjs());
 var LightingSystem = class extends System {
   async preload() {
   }
@@ -5702,7 +5852,7 @@ var LightingSystem = class extends System {
       const renderTransformComponent = renderEntity.getComponent("TransformComponent");
       if (!renderTransformComponent)
         return;
-      let combinedLightColor = import_gl_matrix9.vec3.create();
+      let combinedLightColor = import_gl_matrix10.vec3.create();
       entitiesWithLighting.forEach((lightEntity) => {
         const lightingComponent = lightEntity.getComponent("LightComponent");
         if (!lightingComponent)
@@ -5713,17 +5863,17 @@ var LightingSystem = class extends System {
         const lightColor = lightingComponent.color;
         const lightIntensity = lightingComponent.intensity;
         const lightPosition = lightingTransformComponent.position;
-        const lightDirection = import_gl_matrix9.vec3.create();
-        import_gl_matrix9.vec3.subtract(lightDirection, renderTransformComponent.position, lightPosition);
-        import_gl_matrix9.vec3.normalize(lightDirection, lightDirection);
-        const lightDistance = import_gl_matrix9.vec3.distance(renderTransformComponent.position, lightPosition);
+        const lightDirection = import_gl_matrix10.vec3.create();
+        import_gl_matrix10.vec3.subtract(lightDirection, renderTransformComponent.position, lightPosition);
+        import_gl_matrix10.vec3.normalize(lightDirection, lightDirection);
+        const lightDistance = import_gl_matrix10.vec3.distance(renderTransformComponent.position, lightPosition);
         const attenuationFactor = 1 / (1 + lightDistance * lightIntensity);
         if (lightingComponent instanceof SpotLightComponent) {
           const lightCutoffAngle = lightingComponent.cutoffAngle;
-          const angleToLight = import_gl_matrix9.vec3.angle(lightDirection, renderTransformComponent.position);
+          const angleToLight = import_gl_matrix10.vec3.angle(lightDirection, renderTransformComponent.position);
           if (angleToLight <= lightCutoffAngle) {
             const spotlightIntensity = 1 - angleToLight / lightCutoffAngle;
-            import_gl_matrix9.vec3.scaleAndAdd(combinedLightColor, combinedLightColor, lightColor, spotlightIntensity * attenuationFactor);
+            import_gl_matrix10.vec3.scaleAndAdd(combinedLightColor, combinedLightColor, lightColor, spotlightIntensity * attenuationFactor);
           }
         }
         lightingComponent.combinedLightColor = combinedLightColor;
@@ -5736,11 +5886,13 @@ var LightingSystem = class extends System {
 
 // src/systems/RenderSystem.ts
 var RenderSystem = class extends System {
-  constructor(canvas, bufferManager) {
+  constructor(canvas, bufferManager, camera, projectionMatrix) {
     super();
     this.canvas = canvas;
     this.gl = canvas.gl;
     this.bufferManager = bufferManager;
+    this.camera = camera;
+    this.projectionMatrix = projectionMatrix;
   }
   async preload(entityManager) {
     const entities = entityManager.getEntitiesByComponent("RenderComponent");
@@ -5751,11 +5903,47 @@ var RenderSystem = class extends System {
   }
   render(entityManager) {
     this.canvas.clear();
-    const entities = entityManager.getEntitiesByComponent("RenderComponent");
-    entities.forEach((entity) => {
+    this.renderSkybox(entityManager);
+    this.renderEntities(entityManager);
+  }
+  async preloadBuffers(entities) {
+    for (const entity of entities) {
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
-        return;
+        continue;
+      renderComponent.shaderProgram.use();
+      this.bufferManager.createBuffers(entity.id, renderComponent);
+    }
+  }
+  renderSkybox(entityManager) {
+    const skyboxEntity = entityManager.getEntitiesByComponent("SkyboxComponent")[0];
+    if (skyboxEntity) {
+      const skyboxRenderComponent = skyboxEntity.getComponent("RenderComponent");
+      if (skyboxRenderComponent) {
+        const materialComponent = skyboxEntity.getComponent("MaterialComponent");
+        if (!materialComponent)
+          return;
+        skyboxRenderComponent.shaderProgram.use();
+        skyboxRenderComponent.shaderProgram.setUniform1i("skybox", 0);
+        skyboxRenderComponent.shaderProgram.setUniformMatrix4fv("view", this.camera.getViewMatrix());
+        skyboxRenderComponent.shaderProgram.setUniformMatrix4fv("projection", this.projectionMatrix);
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, materialComponent.texture);
+        this.bufferManager.bindBuffers(skyboxEntity.id);
+        this.bufferManager.associateVBOWithAttribute(skyboxEntity.id, skyboxRenderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
+        this.gl.drawElements(this.gl.TRIANGLES, skyboxRenderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
+      }
+    }
+  }
+  renderEntities(entityManager) {
+    const entities = entityManager.getEntitiesByComponent("RenderComponent");
+    for (const entity of entities) {
+      const skyboxComponent = entity.getComponent("SkyboxComponent");
+      if (skyboxComponent)
+        continue;
+      const renderComponent = entity.getComponent("RenderComponent");
+      if (!renderComponent)
+        continue;
       const materialComponent = entity.getComponent("MaterialComponent");
       renderComponent.shaderProgram.use();
       const lightComponent = entity.getComponent("LightComponent");
@@ -5782,20 +5970,12 @@ var RenderSystem = class extends System {
       this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
       this.bufferManager.associateUVWithAttribute(entity.id, renderComponent.shaderProgram, "uv", 2, this.gl.FLOAT, 0, 0);
       this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
-    });
-  }
-  async preloadBuffers(entities) {
-    for (const entity of entities) {
-      const renderComponent = entity.getComponent("RenderComponent");
-      if (!renderComponent)
-        continue;
-      renderComponent.shaderProgram.use();
-      this.bufferManager.createBuffers(entity.id, renderComponent);
     }
   }
 };
 
 // src/systems/TransformSystem.ts
+var import_gl_matrix11 = __toESM(require_cjs());
 var TransformSystem = class extends System {
   async preload(entityManager) {
     const entities = entityManager.getEntitiesByComponents(["TransformComponent", "RenderComponent"]);
@@ -5810,7 +5990,7 @@ var TransformSystem = class extends System {
       const transformComponent = entity.getComponent("TransformComponent");
       if (!transformComponent)
         continue;
-      const modelMatrix = transformComponent.getModelMatrix();
+      const modelMatrix = this.getModelMatrix(transformComponent);
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
         continue;
@@ -5820,23 +6000,35 @@ var TransformSystem = class extends System {
     }
     ;
   }
+  getModelMatrix(transformComponent) {
+    import_gl_matrix11.mat4.translate(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.position);
+    import_gl_matrix11.mat4.rotateX(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[0]);
+    import_gl_matrix11.mat4.rotateY(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[1]);
+    import_gl_matrix11.mat4.rotateZ(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[2]);
+    import_gl_matrix11.mat4.scale(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.scale);
+    return transformComponent.modelMatrix;
+  }
 };
 
 // src/main.ts
 var main = async () => {
   try {
-    const window = new WebGLCanvas(800, 800);
+    const window = new WebGLCanvas(1600, 900);
     const entityManager = new EntityManager();
     const terrain = await createTerrainEntity(window.gl);
     const cube = await createCubeEntity(window.gl);
-    entityManager.addEntities([terrain, cube]);
+    const skybox = await createSkybox(window.gl);
+    entityManager.addEntities([skybox, terrain, cube]);
     const game = new Game(entityManager);
+    const projectionMatrix = import_gl_matrix12.mat4.create();
+    const camera = new FirstPersonCamera(import_gl_matrix12.vec3.fromValues(0, 0, -5), import_gl_matrix12.quat.create(), 2);
     const bufferManager = new BufferManager(window.gl);
-    const renderSystem = new RenderSystem(window, bufferManager);
+    const renderSystem = new RenderSystem(window, bufferManager, camera, projectionMatrix);
     const transformSystem = new TransformSystem();
-    const cameraSystem = new CameraSystem(1e-3, import_gl_matrix10.mat4.create(), window, 0.1);
+    const cameraSystem = new CameraSystem(1e-3, projectionMatrix, window, camera, 0.1);
     const lightingSystem = new LightingSystem();
-    game.addSystems([cameraSystem, transformSystem, lightingSystem, renderSystem]);
+    const collisionSystem = new CollisionSystem();
+    game.addSystems([cameraSystem, transformSystem, lightingSystem, renderSystem, collisionSystem]);
     game.run();
   } catch (error) {
     console.error(`Error creating entities: ${error}`);

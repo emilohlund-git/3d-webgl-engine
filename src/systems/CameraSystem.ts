@@ -1,9 +1,8 @@
-import { mat4, quat, vec3 } from "gl-matrix";
+import { mat4 } from "gl-matrix";
 import { InputManager } from "../InputManager";
 import { ShaderProgram } from "../ShaderProgram";
 import { WebGLCanvas } from "../WebGLCanvas";
 import { Camera } from "../cameras/Camera";
-import { OrbitCamera } from "../cameras/OrbitCamera";
 import { RenderComponent } from "../components/RenderComponent";
 import { EntityManager } from "../entities/EntityManager";
 import { System } from "./System";
@@ -22,20 +21,21 @@ export class CameraSystem extends System {
     mouseSensitivity: number,
     projectionMatrix: mat4,
     canvas: WebGLCanvas,
-    moveSpeed: number = 0.1,
+    camera: Camera,
+    moveSpeed: number = 5,
   ) {
     super();
 
     this.inputManager = new InputManager();
     this.moveSpeed = moveSpeed;
-    this.camera = new OrbitCamera(vec3.fromValues(0, 0, -5), quat.create());
+    this.camera = camera;
     this.mouseSensitivity = mouseSensitivity;
     this.projectionMatrix = projectionMatrix;
     this.canvas = canvas;
   }
 
   async preload() {
-    mat4.perspective(this.projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100);
+    mat4.perspective(this.projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 10000);
   }
 
   update() {

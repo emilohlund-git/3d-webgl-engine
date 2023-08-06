@@ -5,6 +5,7 @@ import { RenderComponent } from "../components/RenderComponent";
 import { TransformComponent } from "../components/TransformComponent";
 import { SpotLightComponent } from "../components/lights/SpotLightComponent";
 import { MeshUtils } from "../utils/MeshUtils";
+import { TextureUtils } from "../utils/TextureUtils";
 import { Entity } from "./Entity";
 
 export async function createTerrainEntity(webGLContext: WebGL2RenderingContext) {
@@ -15,10 +16,13 @@ export async function createTerrainEntity(webGLContext: WebGL2RenderingContext) 
 
   const { vertices, indices, normals, uvs } = MeshUtils.generateGridMesh(200, 200);
 
+  const textureSrc = "./assets/textures/rocky_trail_disp_4k.png";
+  const texture = await TextureUtils.loadTexture(webGLContext, textureSrc);
   const materialComponent = new MaterialComponent(
     vec3.fromValues(0.6, 0.4, 0.2),
     0.8,
     .5,
+    texture
   )
 
   const renderComponent = new RenderComponent(

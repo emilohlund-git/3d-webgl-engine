@@ -5,8 +5,5 @@ body {
   align-items: center;
   justify-content: center;
   height: 90vh;
-}
-
-canvas {
-  border: 1px solid red;
+  background-color: black;
 }

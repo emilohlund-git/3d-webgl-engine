@@ -10,7 +10,7 @@ export interface Mesh {
 
 export class MeshUtils {
   static generateGridMesh(rows: number, cols: number): Mesh {
-    const heightmap = TerrainUtils.generateHeightMap(rows, cols, 0.05, 2.0, 0.6);
+    const heightmap = TerrainUtils.generateHeightMap(rows, cols, 0.02, 1.0, 0.6);
 
     const terrainSizeX = heightmap[0].length;
     const terrainSizeZ = heightmap.length;
@@ -44,7 +44,7 @@ export class MeshUtils {
     }
 
     const normals = TerrainUtils.computeVertexNormals(vertices, indices);
-    const uvs = this.generateCubeUVs();
+    const uvs = this.generateTerrainUVs(rows, cols);
 
     return { vertices, indices, normals, uvs };
   }
@@ -106,6 +106,20 @@ export class MeshUtils {
     return { vertices, indices, normals, uvs };
   }
 
+  private static generateTerrainUVs(width: number, length: number): number[] {
+    const uvs = [];
+
+    for (let z = 0; z <= length; z++) {
+      for (let x = 0; x <= width; x++) {
+        const u = x / width;
+        const v = z / length;
+        uvs.push(u, v);
+      }
+    }
+
+    return uvs;
+  }
+
   private static generateCubeUVs(): number[] {
     // TODO: Find a way to generate UVs programatically
 
@@ -122,6 +136,6 @@ export class MeshUtils {
       0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
       // Left
       0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-    ];;
+    ];
   }
 }
