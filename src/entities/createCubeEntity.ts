@@ -1,8 +1,10 @@
 import { vec3 } from "gl-matrix";
 import { ShaderProgram } from "../ShaderProgram";
-import { LightingComponent } from "../components/LightingComponent";
+import { MaterialComponent } from "../components/MaterialComponent";
 import { RenderComponent } from "../components/RenderComponent";
 import { TransformComponent } from "../components/TransformComponent";
+import { SpotLightComponent } from "../components/lights/SpotLightComponent";
+import { TerrainUtils } from "../utils/TerrainUtils";
 import { Entity } from "./Entity";
 
 export async function createCubeEntity(webGLContext: WebGL2RenderingContext): Promise<Entity> {
@@ -26,30 +28,33 @@ export async function createCubeEntity(webGLContext: WebGL2RenderingContext): Pr
     16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23
   ];
 
-  const colors = [
-    5, 3, 7, 5, 3, 7, 5, 3, 7, 5, 3, 7,
-    1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 3,
-    0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-    1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
-    1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0,
-    0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0
-  ];
+  const normals = TerrainUtils.computeVertexNormals(vertices, indices);
 
   const renderComponent = new RenderComponent(
     vertices,
     indices,
-    colors,
-    [],
+    normals,
     shaderProgram
   );
 
-  const lightingComponent = new LightingComponent(
-    vec3.fromValues(1.0, 1.0, 1.0),
-    .2
+  const materialComponent = new MaterialComponent(
+    vec3.fromValues(1.0, 0.0, 0.0),
+    0.8,
+    1
   )
 
   cube.addComponent("RenderComponent", renderComponent);
-  cube.addComponent("LightingComponent", lightingComponent);
+  cube.addComponent("LightComponent", new SpotLightComponent(
+    vec3.fromValues(1.0, 1.0, 1.0),
+    1,
+    vec3.fromValues(-1.0, -1.0, -1.0),
+    vec3.fromValues(1.0, 1.0, 1.0),
+    121,
+    0.8,
+    0.8,
+    141
+  ));
+  cube.addComponent("MaterialComponent", materialComponent);
   cube.addComponent("TransformComponent", new TransformComponent(vec3.fromValues(0, 0.035, 0)));
 
   return cube;
