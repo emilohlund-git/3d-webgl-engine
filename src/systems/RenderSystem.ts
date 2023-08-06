@@ -5,7 +5,6 @@ import { Camera } from "../cameras/Camera";
 import { LightComponent } from "../components/LightComponent";
 import { MaterialComponent } from "../components/MaterialComponent";
 import { RenderComponent } from "../components/RenderComponent";
-import { SkyboxComponent } from "../components/SkyboxComponent";
 import { Entity } from "../entities/Entity";
 import { EntityManager } from "../entities/EntityManager";
 import { System } from "./System";
@@ -38,8 +37,16 @@ export class RenderSystem extends System {
   render(entityManager: EntityManager) {
     this.canvas.clear();
 
-    this.renderSkybox(entityManager);
-    this.renderEntities(entityManager);
+    const entities = entityManager.getEntitiesByComponent("RenderComponent");
+
+    const skyboxEntity = entities.find((e) => e.hasComponent("SkyboxComponent"));
+    const renderEntities = entities.filter((e) => !e.hasComponent("SkyboxComponent"));
+
+    if (skyboxEntity) {
+      this.renderSkybox(skyboxEntity);
+    }
+
+    this.renderEntities(renderEntities);
   }
 
   private async preloadBuffers(entities: Entity[]) {
@@ -52,61 +59,35 @@ export class RenderSystem extends System {
     }
   }
 
-  private renderSkybox(entityManager: EntityManager) {
-    const skyboxEntity = entityManager.getEntitiesByComponent("SkyboxComponent")[0];
-    if (skyboxEntity) {
-      const skyboxRenderComponent = skyboxEntity.getComponent<RenderComponent>("RenderComponent");
-      if (skyboxRenderComponent) {
-        const materialComponent = skyboxEntity.getComponent<MaterialComponent>("MaterialComponent");
-        if (!materialComponent) return;
+  private renderSkybox(skyboxEntity: Entity) {
+    const skyboxRenderComponent = skyboxEntity.getComponent<RenderComponent>("RenderComponent");
+    if (!skyboxRenderComponent) return;
+    const materialComponent = skyboxEntity.getComponent<MaterialComponent>("MaterialComponent");
+    if (!materialComponent) return;
 
-        skyboxRenderComponent.shaderProgram.use();
+    skyboxRenderComponent.shaderProgram.use();
+    skyboxRenderComponent.shaderProgram.setUniform1i("skybox", 0); // Use texture unit 0
+    skyboxRenderComponent.shaderProgram.setUniformMatrix4fv("view", this.camera.getViewMatrix());
+    skyboxRenderComponent.shaderProgram.setUniformMatrix4fv("projection", this.projectionMatrix);
 
-        skyboxRenderComponent.shaderProgram.setUniform1i("skybox", 0); // Use texture unit 0
-        skyboxRenderComponent.shaderProgram.setUniformMatrix4fv("view", this.camera.getViewMatrix());
-        skyboxRenderComponent.shaderProgram.setUniformMatrix4fv("projection", this.projectionMatrix);
-
-        // Bind the cube map texture to texture unit 0
-        this.gl.activeTexture(this.gl.TEXTURE0);
-        this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, materialComponent.texture!);
-        this.bufferManager.bindBuffers(skyboxEntity.id);
-        this.bufferManager.associateVBOWithAttribute(skyboxEntity.id, skyboxRenderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
-        this.gl.drawElements(this.gl.TRIANGLES, skyboxRenderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
-      }
-    }
+    // Bind the cube map texture to texture unit 0
+    this.gl.activeTexture(this.gl.TEXTURE0);
+    this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, materialComponent.texture!);
+    this.bufferManager.bindBuffers(skyboxEntity.id);
+    this.bufferManager.associateVBOWithAttribute(skyboxEntity.id, skyboxRenderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
+    this.gl.drawElements(this.gl.TRIANGLES, skyboxRenderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
   }
 
-  private renderEntities(entityManager: EntityManager) {
-    const entities = entityManager.getEntitiesByComponent("RenderComponent");
+  private renderEntities(entities: Entity[]) {
     for (const entity of entities) {
-      const skyboxComponent = entity.getComponent<SkyboxComponent>("SkyboxComponent");
-      if (skyboxComponent) continue;
       const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");
       if (!renderComponent) continue;
 
       const materialComponent = entity.getComponent<MaterialComponent>("MaterialComponent");
+      if (!materialComponent) continue;
 
       renderComponent.shaderProgram.use();
-
-      const lightComponent = entity.getComponent<LightComponent>("LightComponent");
-      if (lightComponent) {
-        renderComponent.shaderProgram.setUniform3f("lightColor", lightComponent.color);
-        renderComponent.shaderProgram.setUniform1f("lightIntensity", lightComponent.intensity);
-        renderComponent.shaderProgram.setUniform3f("lightDirection", lightComponent.direction);
-        // Set uniform for ambient light
-        renderComponent.shaderProgram.setUniform3f("ambientLightColor", lightComponent.combinedLightColor);
-        renderComponent.shaderProgram.setUniform1f("ambientLightIntensity", 0.4); // Adjust intensity as needed
-      }
-
-      if (materialComponent) {
-        renderComponent.shaderProgram.setUniform3f("materialColor", materialComponent.color);
-        if (materialComponent.texture) {
-          renderComponent.shaderProgram.use();
-          renderComponent.shaderProgram.setUniform1i("textureSampler", 0); // Use texture unit 0
-          this.gl.activeTexture(this.gl.TEXTURE0);
-          this.gl.bindTexture(this.gl.TEXTURE_2D, materialComponent.texture);
-        }
-      }
+      this.setupShaderProgramUniforms(entity, renderComponent, materialComponent);
 
       this.bufferManager.bindBuffers(entity.id);
       if (renderComponent.normals.length > 0) {
@@ -115,6 +96,26 @@ export class RenderSystem extends System {
       this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
       this.bufferManager.associateUVWithAttribute(entity.id, renderComponent.shaderProgram, "uv", 2, this.gl.FLOAT, 0, 0);
       this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
+    }
+  }
+
+  private setupShaderProgramUniforms(entity: Entity, renderComponent: RenderComponent, materialComponent: MaterialComponent) {
+    const shaderProgram = renderComponent.shaderProgram;
+    shaderProgram.setUniform3f("materialColor", materialComponent.color);
+
+    if (materialComponent.texture) {
+      shaderProgram.setUniform1i("textureSampler", 0); // Use texture unit 0
+      this.gl.activeTexture(this.gl.TEXTURE0);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, materialComponent.texture);
+    }
+
+    const lightComponent = entity.getComponent<LightComponent>("LightComponent");
+    if (lightComponent) {
+      shaderProgram.setUniform3f("lightColor", lightComponent.color);
+      shaderProgram.setUniform1f("lightIntensity", lightComponent.intensity);
+      shaderProgram.setUniform3f("lightDirection", lightComponent.direction);
+      shaderProgram.setUniform3f("ambientLightColor", lightComponent.combinedLightColor);
+      shaderProgram.setUniform1f("ambientLightIntensity", 0.4); // Adjust intensity as needed
     }
   }
 }

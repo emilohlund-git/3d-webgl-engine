@@ -3307,7 +3307,7 @@ var require_quat = __commonJS({
     exports.setAxes = exports.sqlerp = exports.rotationTo = exports.equals = exports.exactEquals = exports.normalize = exports.sqrLen = exports.squaredLength = exports.len = exports.length = exports.lerp = exports.dot = exports.scale = exports.mul = exports.add = exports.set = exports.copy = exports.fromValues = exports.clone = void 0;
     var glMatrix = _interopRequireWildcard(require_common());
     var mat3 = _interopRequireWildcard(require_mat3());
-    var vec311 = _interopRequireWildcard(require_vec3());
+    var vec312 = _interopRequireWildcard(require_vec3());
     var vec4 = _interopRequireWildcard(require_vec4());
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
@@ -3601,16 +3601,16 @@ var require_quat = __commonJS({
     var equals = vec4.equals;
     exports.equals = equals;
     var rotationTo = function() {
-      var tmpvec3 = vec311.create();
-      var xUnitVec3 = vec311.fromValues(1, 0, 0);
-      var yUnitVec3 = vec311.fromValues(0, 1, 0);
+      var tmpvec3 = vec312.create();
+      var xUnitVec3 = vec312.fromValues(1, 0, 0);
+      var yUnitVec3 = vec312.fromValues(0, 1, 0);
       return function(out, a, b) {
-        var dot2 = vec311.dot(a, b);
+        var dot2 = vec312.dot(a, b);
         if (dot2 < -0.999999) {
-          vec311.cross(tmpvec3, xUnitVec3, a);
-          if (vec311.len(tmpvec3) < 1e-6)
-            vec311.cross(tmpvec3, yUnitVec3, a);
-          vec311.normalize(tmpvec3, tmpvec3);
+          vec312.cross(tmpvec3, xUnitVec3, a);
+          if (vec312.len(tmpvec3) < 1e-6)
+            vec312.cross(tmpvec3, yUnitVec3, a);
+          vec312.normalize(tmpvec3, tmpvec3);
           setAxisAngle(out, tmpvec3, Math.PI);
           return out;
         } else if (dot2 > 0.999999) {
@@ -3620,7 +3620,7 @@ var require_quat = __commonJS({
           out[3] = 1;
           return out;
         } else {
-          vec311.cross(tmpvec3, a, b);
+          vec312.cross(tmpvec3, a, b);
           out[0] = tmpvec3[0];
           out[1] = tmpvec3[1];
           out[2] = tmpvec3[2];
@@ -4502,8 +4502,8 @@ var require_cjs = __commonJS({
     exports.quat2 = quat22;
     var vec22 = _interopRequireWildcard(require_vec2());
     exports.vec2 = vec22;
-    var vec311 = _interopRequireWildcard(require_vec3());
-    exports.vec3 = vec311;
+    var vec312 = _interopRequireWildcard(require_vec3());
+    exports.vec3 = vec312;
     var vec4 = _interopRequireWildcard(require_vec4());
     exports.vec4 = vec4;
     function _getRequireWildcardCache(nodeInterop) {
@@ -4548,7 +4548,7 @@ var require_cjs = __commonJS({
 });
 
 // src/main.ts
-var import_gl_matrix12 = __toESM(require_cjs());
+var import_gl_matrix13 = __toESM(require_cjs());
 
 // src/Game.ts
 var Game = class {
@@ -4903,6 +4903,9 @@ var EntityManager = class {
 };
 
 // src/entities/createCubeEntity.ts
+var import_gl_matrix7 = __toESM(require_cjs());
+
+// src/entities/EntityBuilder.ts
 var import_gl_matrix6 = __toESM(require_cjs());
 
 // src/ShaderProgram.ts
@@ -5055,6 +5058,13 @@ var RenderComponent = class extends Component {
     this.normals = normals;
     this.uvs = uvs;
     this.shaderProgram = shaderProgram;
+  }
+};
+
+// src/components/SkyboxComponent.ts
+var SkyboxComponent = class extends Component {
+  constructor() {
+    super("SkyboxComponent");
   }
 };
 
@@ -5594,121 +5604,214 @@ var Entity = class {
   }
 };
 
+// src/entities/EntityBuilder.ts
+var EntityBuilder = class {
+  constructor(webGLContext) {
+    this.isSkybox = false;
+    this.isTerrain = false;
+    this.meshSize = 1;
+    this.gridSize = {
+      rows: 200,
+      cols: 200
+    };
+    this.lightProperties = {
+      color: import_gl_matrix6.vec3.fromValues(1, 1, 1),
+      intensity: 1,
+      position: import_gl_matrix6.vec3.create(),
+      direction: import_gl_matrix6.vec3.create(),
+      angle: 10,
+      innerConeAngle: 10,
+      outerConeAngle: 5,
+      cutoffAngle: 10
+    };
+    this.materialProperties = {
+      color: import_gl_matrix6.vec3.fromValues(1, 1, 1),
+      shinyness: 0.8,
+      transparency: 1
+    };
+    this.position = import_gl_matrix6.vec3.create();
+    this.webGLContext = webGLContext;
+  }
+  setMeshSize(size) {
+    this.meshSize = size;
+    return this;
+  }
+  setTextureSrc(src) {
+    if (this.isSkybox)
+      throw new Error("Assign 6 textures for a skybox.");
+    this.textureSrc = src;
+    return this;
+  }
+  setTextureSrcList(srcList) {
+    if (!this.isSkybox)
+      throw new Error("Only one texture if not skybox.");
+    this.textureSrcList = srcList;
+    return this;
+  }
+  setLightProperties(lightProperties) {
+    this.lightProperties = { ...this.lightProperties, ...lightProperties };
+    return this;
+  }
+  setIsTerrain() {
+    this.isTerrain = true;
+    return this;
+  }
+  setIsSkybox() {
+    this.isSkybox = true;
+    return this;
+  }
+  setVertexShader(vertexShaderSource) {
+    this.vertexShaderSource = vertexShaderSource;
+    return this;
+  }
+  setFragmentShader(fragmentShaderSource) {
+    this.fragmentShaderSource = fragmentShaderSource;
+    return this;
+  }
+  setMaterialProperties(materialProperties) {
+    this.materialProperties = { ...this.materialProperties, ...materialProperties };
+    return this;
+  }
+  setGridSize(gridSize) {
+    this.gridSize = gridSize;
+    return this;
+  }
+  setPosition(position) {
+    this.position = position;
+    return this;
+  }
+  async build() {
+    const entity = new Entity();
+    if (!this.vertexShaderSource || !this.fragmentShaderSource) {
+      throw new Error("Assign a vertex and a fragment shader to Entity.");
+    }
+    const shaderProgram = new ShaderProgram(this.webGLContext);
+    await shaderProgram.initializeShaders(this.vertexShaderSource, this.fragmentShaderSource);
+    const meshData = this.generateMesh();
+    if (!meshData.vertices || !meshData.indices || !meshData.normals || !meshData.uvs) {
+      throw new Error("Failed to generate mesh.");
+    }
+    const texture = await this.loadTexture();
+    const materialComponent = this.createMaterialComponent(texture);
+    const renderComponent = this.createRenderComponent(meshData, shaderProgram);
+    if (!this.isSkybox) {
+      const lightComponent = this.createSpotLightComponent();
+      const transformComponent = this.createTransformComponent();
+      entity.addComponent("TransformComponent", transformComponent);
+      entity.addComponent("LightComponent", lightComponent);
+    } else {
+      entity.addComponent("SkyboxComponent", new SkyboxComponent());
+    }
+    entity.addComponent("RenderComponent", renderComponent);
+    entity.addComponent("MaterialComponent", materialComponent);
+    return entity;
+  }
+  async loadTexture() {
+    if (this.isSkybox && this.textureSrcList) {
+      return await TextureUtils.loadCubeMapTexture(this.webGLContext, this.textureSrcList);
+    } else if (!this.isSkybox && this.textureSrc) {
+      return await TextureUtils.loadTexture(this.webGLContext, this.textureSrc);
+    } else {
+      throw new Error("Failed to load texture.");
+    }
+  }
+  generateMesh() {
+    if (this.isTerrain) {
+      return MeshUtils.generateGridMesh(this.gridSize.rows, this.gridSize.cols);
+    } else {
+      return MeshUtils.generateCubeMesh(this.meshSize);
+    }
+  }
+  createSpotLightComponent() {
+    return new SpotLightComponent(
+      this.lightProperties.color,
+      this.lightProperties.intensity,
+      this.lightProperties.position,
+      this.lightProperties.direction,
+      this.lightProperties.angle,
+      this.lightProperties.innerConeAngle,
+      this.lightProperties.outerConeAngle,
+      this.lightProperties.cutoffAngle
+    );
+  }
+  createTransformComponent() {
+    return new TransformComponent(this.position);
+  }
+  createRenderComponent(meshData, shaderProgram) {
+    return new RenderComponent(meshData.vertices, meshData.indices, meshData.normals, meshData.uvs, shaderProgram);
+  }
+  createMaterialComponent(texture) {
+    return new MaterialComponent(
+      this.materialProperties.color,
+      this.materialProperties.shinyness,
+      this.materialProperties.transparency,
+      texture
+    );
+  }
+};
+
 // src/entities/createCubeEntity.ts
 async function createCubeEntity(webGLContext) {
-  const cube = new Entity();
-  const shaderProgram = new ShaderProgram(webGLContext);
-  await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
-  const { vertices, indices, normals, uvs } = MeshUtils.generateCubeMesh(20);
-  const renderComponent = new RenderComponent(
-    vertices,
-    indices,
-    normals,
-    uvs,
-    shaderProgram
-  );
-  const textureSrc = "./assets/textures/short_bricks_floor_disp_1k.png";
-  const texture = await TextureUtils.loadTexture(webGLContext, textureSrc);
-  const materialComponent = new MaterialComponent(
-    import_gl_matrix6.vec3.fromValues(1, 1, 1),
-    0.8,
-    1,
-    texture
-  );
-  cube.addComponent("RenderComponent", renderComponent);
-  cube.addComponent("LightComponent", new SpotLightComponent(
-    import_gl_matrix6.vec3.fromValues(1, 1, 1),
-    1,
-    import_gl_matrix6.vec3.fromValues(-1, -1, -1),
-    import_gl_matrix6.vec3.fromValues(1, 1, 1),
-    121,
-    0.8,
-    0.8,
-    141
-  ));
-  cube.addComponent("MaterialComponent", materialComponent);
-  cube.addComponent("TransformComponent", new TransformComponent(import_gl_matrix6.vec3.fromValues(0, 3, 0)));
+  const cube = await new EntityBuilder(webGLContext).setFragmentShader("./shaders/frag-shader.frag").setVertexShader("./shaders/vert-shader.vert").setMeshSize(20).setTextureSrc("./assets/textures/short_bricks_floor_disp_1k.png").setMaterialProperties({
+    color: import_gl_matrix7.vec3.fromValues(1, 1, 1),
+    shinyness: 0.8,
+    transparency: 1
+  }).setLightProperties({
+    color: import_gl_matrix7.vec3.fromValues(1, 1, 1),
+    intensity: 1,
+    position: import_gl_matrix7.vec3.fromValues(-1, -1, -1),
+    direction: import_gl_matrix7.vec3.fromValues(1, 1, 1),
+    angle: 121,
+    innerConeAngle: 0.8,
+    outerConeAngle: 0.8,
+    cutoffAngle: 141
+  }).setPosition(import_gl_matrix7.vec3.fromValues(0, 3, 0)).build();
   return cube;
 }
 
 // src/entities/createSkyBox.ts
-var import_gl_matrix7 = __toESM(require_cjs());
-
-// src/components/SkyboxComponent.ts
-var SkyboxComponent = class extends Component {
-  constructor() {
-    super("SkyboxComponent");
-  }
-};
-
-// src/entities/createSkyBox.ts
+var import_gl_matrix8 = __toESM(require_cjs());
 async function createSkybox(webGLContext) {
-  const skybox = new Entity();
-  const shaderProgram = new ShaderProgram(webGLContext);
-  await shaderProgram.initializeShaders("./shaders/skybox-vert-shader.vert", "./shaders/skybox-frag-shader.frag");
-  const { vertices, indices, normals, uvs } = MeshUtils.generateCubeMesh(1e3);
-  const renderComponent = new RenderComponent(vertices, indices, normals, uvs, shaderProgram);
-  const textureSrcList = [
-    "./assets/skybox/miramar_rt.png",
-    "./assets/skybox/miramar_lf.png",
-    "./assets/skybox/miramar_up.png",
-    "./assets/skybox/miramar_dn.png",
-    "./assets/skybox/miramar_bk.png",
-    "./assets/skybox/miramar_ft.png"
-  ];
-  const texture = await TextureUtils.loadCubeMapTexture(webGLContext, textureSrcList);
-  const materialComponent = new MaterialComponent(
-    import_gl_matrix7.vec3.fromValues(1, 1, 1),
-    0.8,
-    1,
-    texture
-  );
-  skybox.addComponent("SkyboxComponent", new SkyboxComponent());
-  skybox.addComponent("RenderComponent", renderComponent);
-  skybox.addComponent("MaterialComponent", materialComponent);
+  const skybox = new EntityBuilder(webGLContext).setIsSkybox().setFragmentShader("./shaders/skybox-frag-shader.frag").setVertexShader("./shaders/skybox-vert-shader.vert").setMeshSize(1e3).setTextureSrcList([
+    "./assets/skybox/yellow/yellow_rt.jpg",
+    "./assets/skybox/yellow/yellow_lf.jpg",
+    "./assets/skybox/yellow/yellow_up.jpg",
+    "./assets/skybox/yellow/yellow_dn.jpg",
+    "./assets/skybox/yellow/yellow_bk.jpg",
+    "./assets/skybox/yellow/yellow_ft.jpg"
+  ]).setMaterialProperties({
+    color: import_gl_matrix8.vec3.fromValues(1, 1, 1),
+    shinyness: 0.8,
+    transparency: 1
+  }).build();
   return skybox;
 }
 
 // src/entities/createTerrainEntity.ts
-var import_gl_matrix8 = __toESM(require_cjs());
+var import_gl_matrix9 = __toESM(require_cjs());
 async function createTerrainEntity(webGLContext) {
-  const terrain = new Entity();
-  const shaderProgram = new ShaderProgram(webGLContext);
-  await shaderProgram.initializeShaders("./shaders/vert-shader.vert", "./shaders/frag-shader.frag");
-  const { vertices, indices, normals, uvs } = MeshUtils.generateGridMesh(200, 200);
-  const textureSrc = "./assets/textures/rocky_trail_disp_4k.png";
-  const texture = await TextureUtils.loadTexture(webGLContext, textureSrc);
-  const materialComponent = new MaterialComponent(
-    import_gl_matrix8.vec3.fromValues(0.6, 0.4, 0.2),
-    0.8,
-    0.5,
-    texture
-  );
-  const renderComponent = new RenderComponent(
-    vertices,
-    indices,
-    normals,
-    uvs,
-    shaderProgram
-  );
-  terrain.addComponent("RenderComponent", renderComponent);
-  terrain.addComponent("MaterialComponent", materialComponent);
-  terrain.addComponent("LightComponent", new SpotLightComponent(
-    import_gl_matrix8.vec3.fromValues(1, 1, 1),
-    1,
-    import_gl_matrix8.vec3.fromValues(0, -10, 1),
-    import_gl_matrix8.vec3.fromValues(0, 1, 0),
-    1,
-    10,
-    10,
-    123
-  ));
-  terrain.addComponent("TransformComponent", new TransformComponent(import_gl_matrix8.vec3.fromValues(0, -10, 0)));
+  const terrain = await new EntityBuilder(webGLContext).setIsTerrain().setFragmentShader("./shaders/frag-shader.frag").setVertexShader("./shaders/vert-shader.vert").setGridSize({
+    rows: 200,
+    cols: 200
+  }).setTextureSrc("./assets/textures/rocky_trail_disp_4k.png").setMaterialProperties({
+    color: import_gl_matrix9.vec3.fromValues(0.6, 0.4, 0.2),
+    shinyness: 0.8,
+    transparency: 1
+  }).setLightProperties({
+    color: import_gl_matrix9.vec3.fromValues(1, 1, 1),
+    intensity: 1,
+    position: import_gl_matrix9.vec3.fromValues(-1, -1, -1),
+    direction: import_gl_matrix9.vec3.fromValues(1, 1, 1),
+    angle: 121,
+    innerConeAngle: 0.8,
+    outerConeAngle: 0.8,
+    cutoffAngle: 141
+  }).setPosition(import_gl_matrix9.vec3.fromValues(0, -10, 0)).build();
   return terrain;
 }
 
 // src/systems/CameraSystem.ts
-var import_gl_matrix9 = __toESM(require_cjs());
+var import_gl_matrix10 = __toESM(require_cjs());
 
 // src/InputManager.ts
 var InputManager = class {
@@ -5771,7 +5874,7 @@ var CameraSystem = class extends System {
     this.canvas = canvas;
   }
   async preload() {
-    import_gl_matrix9.mat4.perspective(this.projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 1e4);
+    import_gl_matrix10.mat4.perspective(this.projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 1e4);
   }
   update() {
     this.handleInput();
@@ -5838,7 +5941,7 @@ var CollisionSystem = class extends System {
 };
 
 // src/systems/LightingSystem.ts
-var import_gl_matrix10 = __toESM(require_cjs());
+var import_gl_matrix11 = __toESM(require_cjs());
 var LightingSystem = class extends System {
   async preload() {
   }
@@ -5852,7 +5955,7 @@ var LightingSystem = class extends System {
       const renderTransformComponent = renderEntity.getComponent("TransformComponent");
       if (!renderTransformComponent)
         return;
-      let combinedLightColor = import_gl_matrix10.vec3.create();
+      let combinedLightColor = import_gl_matrix11.vec3.create();
       entitiesWithLighting.forEach((lightEntity) => {
         const lightingComponent = lightEntity.getComponent("LightComponent");
         if (!lightingComponent)
@@ -5863,17 +5966,17 @@ var LightingSystem = class extends System {
         const lightColor = lightingComponent.color;
         const lightIntensity = lightingComponent.intensity;
         const lightPosition = lightingTransformComponent.position;
-        const lightDirection = import_gl_matrix10.vec3.create();
-        import_gl_matrix10.vec3.subtract(lightDirection, renderTransformComponent.position, lightPosition);
-        import_gl_matrix10.vec3.normalize(lightDirection, lightDirection);
-        const lightDistance = import_gl_matrix10.vec3.distance(renderTransformComponent.position, lightPosition);
+        const lightDirection = import_gl_matrix11.vec3.create();
+        import_gl_matrix11.vec3.subtract(lightDirection, renderTransformComponent.position, lightPosition);
+        import_gl_matrix11.vec3.normalize(lightDirection, lightDirection);
+        const lightDistance = import_gl_matrix11.vec3.distance(renderTransformComponent.position, lightPosition);
         const attenuationFactor = 1 / (1 + lightDistance * lightIntensity);
         if (lightingComponent instanceof SpotLightComponent) {
           const lightCutoffAngle = lightingComponent.cutoffAngle;
-          const angleToLight = import_gl_matrix10.vec3.angle(lightDirection, renderTransformComponent.position);
+          const angleToLight = import_gl_matrix11.vec3.angle(lightDirection, renderTransformComponent.position);
           if (angleToLight <= lightCutoffAngle) {
             const spotlightIntensity = 1 - angleToLight / lightCutoffAngle;
-            import_gl_matrix10.vec3.scaleAndAdd(combinedLightColor, combinedLightColor, lightColor, spotlightIntensity * attenuationFactor);
+            import_gl_matrix11.vec3.scaleAndAdd(combinedLightColor, combinedLightColor, lightColor, spotlightIntensity * attenuationFactor);
           }
         }
         lightingComponent.combinedLightColor = combinedLightColor;
@@ -5903,8 +6006,13 @@ var RenderSystem = class extends System {
   }
   render(entityManager) {
     this.canvas.clear();
-    this.renderSkybox(entityManager);
-    this.renderEntities(entityManager);
+    const entities = entityManager.getEntitiesByComponent("RenderComponent");
+    const skyboxEntity = entities.find((e) => e.hasComponent("SkyboxComponent"));
+    const renderEntities = entities.filter((e) => !e.hasComponent("SkyboxComponent"));
+    if (skyboxEntity) {
+      this.renderSkybox(skyboxEntity);
+    }
+    this.renderEntities(renderEntities);
   }
   async preloadBuffers(entities) {
     for (const entity of entities) {
@@ -5915,54 +6023,33 @@ var RenderSystem = class extends System {
       this.bufferManager.createBuffers(entity.id, renderComponent);
     }
   }
-  renderSkybox(entityManager) {
-    const skyboxEntity = entityManager.getEntitiesByComponent("SkyboxComponent")[0];
-    if (skyboxEntity) {
-      const skyboxRenderComponent = skyboxEntity.getComponent("RenderComponent");
-      if (skyboxRenderComponent) {
-        const materialComponent = skyboxEntity.getComponent("MaterialComponent");
-        if (!materialComponent)
-          return;
-        skyboxRenderComponent.shaderProgram.use();
-        skyboxRenderComponent.shaderProgram.setUniform1i("skybox", 0);
-        skyboxRenderComponent.shaderProgram.setUniformMatrix4fv("view", this.camera.getViewMatrix());
-        skyboxRenderComponent.shaderProgram.setUniformMatrix4fv("projection", this.projectionMatrix);
-        this.gl.activeTexture(this.gl.TEXTURE0);
-        this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, materialComponent.texture);
-        this.bufferManager.bindBuffers(skyboxEntity.id);
-        this.bufferManager.associateVBOWithAttribute(skyboxEntity.id, skyboxRenderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
-        this.gl.drawElements(this.gl.TRIANGLES, skyboxRenderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
-      }
-    }
+  renderSkybox(skyboxEntity) {
+    const skyboxRenderComponent = skyboxEntity.getComponent("RenderComponent");
+    if (!skyboxRenderComponent)
+      return;
+    const materialComponent = skyboxEntity.getComponent("MaterialComponent");
+    if (!materialComponent)
+      return;
+    skyboxRenderComponent.shaderProgram.use();
+    skyboxRenderComponent.shaderProgram.setUniform1i("skybox", 0);
+    skyboxRenderComponent.shaderProgram.setUniformMatrix4fv("view", this.camera.getViewMatrix());
+    skyboxRenderComponent.shaderProgram.setUniformMatrix4fv("projection", this.projectionMatrix);
+    this.gl.activeTexture(this.gl.TEXTURE0);
+    this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, materialComponent.texture);
+    this.bufferManager.bindBuffers(skyboxEntity.id);
+    this.bufferManager.associateVBOWithAttribute(skyboxEntity.id, skyboxRenderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
+    this.gl.drawElements(this.gl.TRIANGLES, skyboxRenderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
   }
-  renderEntities(entityManager) {
-    const entities = entityManager.getEntitiesByComponent("RenderComponent");
+  renderEntities(entities) {
     for (const entity of entities) {
-      const skyboxComponent = entity.getComponent("SkyboxComponent");
-      if (skyboxComponent)
-        continue;
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
         continue;
       const materialComponent = entity.getComponent("MaterialComponent");
+      if (!materialComponent)
+        continue;
       renderComponent.shaderProgram.use();
-      const lightComponent = entity.getComponent("LightComponent");
-      if (lightComponent) {
-        renderComponent.shaderProgram.setUniform3f("lightColor", lightComponent.color);
-        renderComponent.shaderProgram.setUniform1f("lightIntensity", lightComponent.intensity);
-        renderComponent.shaderProgram.setUniform3f("lightDirection", lightComponent.direction);
-        renderComponent.shaderProgram.setUniform3f("ambientLightColor", lightComponent.combinedLightColor);
-        renderComponent.shaderProgram.setUniform1f("ambientLightIntensity", 0.4);
-      }
-      if (materialComponent) {
-        renderComponent.shaderProgram.setUniform3f("materialColor", materialComponent.color);
-        if (materialComponent.texture) {
-          renderComponent.shaderProgram.use();
-          renderComponent.shaderProgram.setUniform1i("textureSampler", 0);
-          this.gl.activeTexture(this.gl.TEXTURE0);
-          this.gl.bindTexture(this.gl.TEXTURE_2D, materialComponent.texture);
-        }
-      }
+      this.setupShaderProgramUniforms(entity, renderComponent, materialComponent);
       this.bufferManager.bindBuffers(entity.id);
       if (renderComponent.normals.length > 0) {
         this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "normal", 3, this.gl.FLOAT, 0, 0);
@@ -5972,10 +6059,27 @@ var RenderSystem = class extends System {
       this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
     }
   }
+  setupShaderProgramUniforms(entity, renderComponent, materialComponent) {
+    const shaderProgram = renderComponent.shaderProgram;
+    shaderProgram.setUniform3f("materialColor", materialComponent.color);
+    if (materialComponent.texture) {
+      shaderProgram.setUniform1i("textureSampler", 0);
+      this.gl.activeTexture(this.gl.TEXTURE0);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, materialComponent.texture);
+    }
+    const lightComponent = entity.getComponent("LightComponent");
+    if (lightComponent) {
+      shaderProgram.setUniform3f("lightColor", lightComponent.color);
+      shaderProgram.setUniform1f("lightIntensity", lightComponent.intensity);
+      shaderProgram.setUniform3f("lightDirection", lightComponent.direction);
+      shaderProgram.setUniform3f("ambientLightColor", lightComponent.combinedLightColor);
+      shaderProgram.setUniform1f("ambientLightIntensity", 0.4);
+    }
+  }
 };
 
 // src/systems/TransformSystem.ts
-var import_gl_matrix11 = __toESM(require_cjs());
+var import_gl_matrix12 = __toESM(require_cjs());
 var TransformSystem = class extends System {
   async preload(entityManager) {
     const entities = entityManager.getEntitiesByComponents(["TransformComponent", "RenderComponent"]);
@@ -6001,11 +6105,11 @@ var TransformSystem = class extends System {
     ;
   }
   getModelMatrix(transformComponent) {
-    import_gl_matrix11.mat4.translate(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.position);
-    import_gl_matrix11.mat4.rotateX(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[0]);
-    import_gl_matrix11.mat4.rotateY(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[1]);
-    import_gl_matrix11.mat4.rotateZ(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[2]);
-    import_gl_matrix11.mat4.scale(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.scale);
+    import_gl_matrix12.mat4.translate(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.position);
+    import_gl_matrix12.mat4.rotateX(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[0]);
+    import_gl_matrix12.mat4.rotateY(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[1]);
+    import_gl_matrix12.mat4.rotateZ(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[2]);
+    import_gl_matrix12.mat4.scale(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.scale);
     return transformComponent.modelMatrix;
   }
 };
@@ -6020,8 +6124,8 @@ var main = async () => {
     const skybox = await createSkybox(window.gl);
     entityManager.addEntities([skybox, terrain, cube]);
     const game = new Game(entityManager);
-    const projectionMatrix = import_gl_matrix12.mat4.create();
-    const camera = new FirstPersonCamera(import_gl_matrix12.vec3.fromValues(0, 0, -5), import_gl_matrix12.quat.create(), 2);
+    const projectionMatrix = import_gl_matrix13.mat4.create();
+    const camera = new FirstPersonCamera(import_gl_matrix13.vec3.fromValues(0, 0, -5), import_gl_matrix13.quat.create(), 2);
     const bufferManager = new BufferManager(window.gl);
     const renderSystem = new RenderSystem(window, bufferManager, camera, projectionMatrix);
     const transformSystem = new TransformSystem();
