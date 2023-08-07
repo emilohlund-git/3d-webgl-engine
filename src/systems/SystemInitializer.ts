@@ -23,6 +23,6 @@ export class SystemInitializer {
     const collisionSystem = new CollisionSystem();
     const physicsSystem = new PhysicsSystem();
 
-    return [cameraSystem, transformSystem, lightingSystem, physicsSystem, collisionSystem, renderSystem];
+    return [cameraSystem, lightingSystem, physicsSystem, collisionSystem, transformSystem, renderSystem];
   }
 }

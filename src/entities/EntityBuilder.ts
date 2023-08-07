@@ -1,5 +1,6 @@
 import { vec3 } from "gl-matrix";
 import { ShaderProgram } from "../ShaderProgram";
+import { CollisionComponent } from "../components/CollisionComponent";
 import { MaterialComponent } from "../components/MaterialComponent";
 import { RigidBodyComponent } from "../components/RigidBodyComponent";
 import { TransformComponent } from "../components/TransformComponent";
@@ -58,6 +59,7 @@ export class EntityBuilder {
       transparency: 1.0,
     };
   private position: vec3 = vec3.create();
+  private collisionSize: vec3 = vec3.create();
   private physicsProperties: {
     mass: number;
     isStatic: boolean;
@@ -110,6 +112,11 @@ export class EntityBuilder {
     cutoffAngle: number;
   }): this {
     this.lightProperties = { ...this.lightProperties, ...lightProperties };
+    return this;
+  }
+
+  setCollisionSize(size: vec3): this {
+    this.collisionSize = size;
     return this;
   }
 
@@ -192,6 +199,7 @@ export class EntityBuilder {
     if (this.isRigidBody) {
       const rigidBodyComponent = this.createRigidBodyComponent(this.physicsProperties);
       entity.addComponent("RigidBodyComponent", rigidBodyComponent);
+      entity.addComponent("CollisionComponent", new CollisionComponent(this.collisionSize));
     }
 
     entity.addComponent("RenderComponent", renderComponent);
