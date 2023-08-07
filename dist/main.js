@@ -3307,7 +3307,7 @@ var require_quat = __commonJS({
     exports.setAxes = exports.sqlerp = exports.rotationTo = exports.equals = exports.exactEquals = exports.normalize = exports.sqrLen = exports.squaredLength = exports.len = exports.length = exports.lerp = exports.dot = exports.scale = exports.mul = exports.add = exports.set = exports.copy = exports.fromValues = exports.clone = void 0;
     var glMatrix = _interopRequireWildcard(require_common());
     var mat3 = _interopRequireWildcard(require_mat3());
-    var vec317 = _interopRequireWildcard(require_vec3());
+    var vec319 = _interopRequireWildcard(require_vec3());
     var vec4 = _interopRequireWildcard(require_vec4());
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
@@ -3601,16 +3601,16 @@ var require_quat = __commonJS({
     var equals = vec4.equals;
     exports.equals = equals;
     var rotationTo = function() {
-      var tmpvec3 = vec317.create();
-      var xUnitVec3 = vec317.fromValues(1, 0, 0);
-      var yUnitVec3 = vec317.fromValues(0, 1, 0);
+      var tmpvec3 = vec319.create();
+      var xUnitVec3 = vec319.fromValues(1, 0, 0);
+      var yUnitVec3 = vec319.fromValues(0, 1, 0);
       return function(out, a, b) {
-        var dot2 = vec317.dot(a, b);
+        var dot2 = vec319.dot(a, b);
         if (dot2 < -0.999999) {
-          vec317.cross(tmpvec3, xUnitVec3, a);
-          if (vec317.len(tmpvec3) < 1e-6)
-            vec317.cross(tmpvec3, yUnitVec3, a);
-          vec317.normalize(tmpvec3, tmpvec3);
+          vec319.cross(tmpvec3, xUnitVec3, a);
+          if (vec319.len(tmpvec3) < 1e-6)
+            vec319.cross(tmpvec3, yUnitVec3, a);
+          vec319.normalize(tmpvec3, tmpvec3);
           setAxisAngle(out, tmpvec3, Math.PI);
           return out;
         } else if (dot2 > 0.999999) {
@@ -3620,7 +3620,7 @@ var require_quat = __commonJS({
           out[3] = 1;
           return out;
         } else {
-          vec317.cross(tmpvec3, a, b);
+          vec319.cross(tmpvec3, a, b);
           out[0] = tmpvec3[0];
           out[1] = tmpvec3[1];
           out[2] = tmpvec3[2];
@@ -4500,10 +4500,10 @@ var require_cjs = __commonJS({
     exports.quat = quat6;
     var quat22 = _interopRequireWildcard(require_quat2());
     exports.quat2 = quat22;
-    var vec22 = _interopRequireWildcard(require_vec2());
-    exports.vec2 = vec22;
-    var vec317 = _interopRequireWildcard(require_vec3());
-    exports.vec3 = vec317;
+    var vec23 = _interopRequireWildcard(require_vec2());
+    exports.vec2 = vec23;
+    var vec319 = _interopRequireWildcard(require_vec3());
+    exports.vec3 = vec319;
     var vec4 = _interopRequireWildcard(require_vec4());
     exports.vec4 = vec4;
     function _getRequireWildcardCache(nodeInterop) {
@@ -4819,7 +4819,7 @@ var config = {
   canvasHeight: 900,
   cameraPosition: import_gl_matrix.vec3.fromValues(0, -10, -8),
   cameraRotation: import_gl_matrix.quat.create(),
-  cameraSpeed: 2,
+  cameraSpeed: 0.05,
   mouseSensitivity: 2
 };
 
@@ -5368,17 +5368,6 @@ var MeshUtils = class {
     const uvs = this.generateCubeUVs();
     return { vertices, indices, normals, uvs };
   }
-  static generateTerrainUVs(width, length) {
-    const uvs = [];
-    for (let z = 0; z <= length; z++) {
-      for (let x = 0; x <= width; x++) {
-        const u = z / 2;
-        const v = x / 2;
-        uvs.push(u, v);
-      }
-    }
-    return uvs;
-  }
   static generateCubeUVs() {
     return [
       // Front
@@ -5734,22 +5723,22 @@ var EntityBuilder = class {
 
 // src/entities/createCubeEntity.ts
 async function createCubeEntity(webGLContext) {
-  const cube = await new EntityBuilder(webGLContext).setIsRigidBody().setFragmentShader("./shaders/frag-shader.frag").setVertexShader("./shaders/vert-shader.vert").setMeshSize(10).setPhysicsProperties({
+  const cube = await new EntityBuilder(webGLContext).setIsRigidBody().setFragmentShader("./shaders/frag-shader.frag").setVertexShader("./shaders/vert-shader.vert").setMeshSize(2).setPhysicsProperties({
     isStatic: false,
-    mass: 1
-  }).setCollisionSize(import_gl_matrix8.vec3.fromValues(10, 10, 10)).setTextureSrc("./assets/textures/short_bricks_floor_disp_1k.png").setMaterialProperties({
+    mass: 0.2
+  }).setCollisionSize(import_gl_matrix8.vec3.fromValues(2, 2, 2)).setTextureSrc("./assets/prototype/Orange/texture_01.png").setMaterialProperties({
     color: import_gl_matrix8.vec3.fromValues(1, 1, 1),
     shinyness: 0.8,
     transparency: 1
   }).setLightProperties({
     color: import_gl_matrix8.vec3.fromValues(1, 1, 1),
-    intensity: 1,
-    position: import_gl_matrix8.vec3.fromValues(-1, -1, -1),
-    direction: import_gl_matrix8.vec3.fromValues(1, 1, 1),
-    angle: 121,
-    innerConeAngle: 0.8,
-    outerConeAngle: 0.8,
-    cutoffAngle: 141
+    intensity: 0.1,
+    position: import_gl_matrix8.vec3.fromValues(0, -10, 0),
+    direction: import_gl_matrix8.vec3.fromValues(0, 1, 0),
+    angle: 360,
+    innerConeAngle: 360,
+    outerConeAngle: 360,
+    cutoffAngle: 360
   }).setPosition(import_gl_matrix8.vec3.fromValues(0, 20, 0)).build();
   return cube;
 }
@@ -5758,12 +5747,12 @@ async function createCubeEntity(webGLContext) {
 var import_gl_matrix9 = __toESM(require_cjs());
 async function createSkybox(webGLContext) {
   const skybox = new EntityBuilder(webGLContext).setIsSkybox().setFragmentShader("./shaders/skybox-frag-shader.frag").setVertexShader("./shaders/skybox-vert-shader.vert").setMeshSize(1e4).setTextureSrcList([
-    "./assets/skybox/yellow/yellow_rt.jpg",
-    "./assets/skybox/yellow/yellow_lf.jpg",
-    "./assets/skybox/yellow/yellow_up.jpg",
-    "./assets/skybox/yellow/yellow_dn.jpg",
-    "./assets/skybox/yellow/yellow_bk.jpg",
-    "./assets/skybox/yellow/yellow_ft.jpg"
+    "./assets/skybox/daylight/Daylight Box_Left.bmp",
+    "./assets/skybox/daylight/Daylight Box_Right.bmp",
+    "./assets/skybox/daylight/Daylight Box_Top.png",
+    "./assets/skybox/daylight/Daylight Box_Bottom.bmp",
+    "./assets/skybox/daylight/Daylight Box_Back.bmp",
+    "./assets/skybox/daylight/Daylight Box_Front.bmp"
   ]).setMaterialProperties({
     color: import_gl_matrix9.vec3.fromValues(1, 1, 1),
     shinyness: 0.8,
@@ -5781,13 +5770,13 @@ async function createTerrainEntity(webGLContext) {
   }).setFragmentShader("./shaders/terrain-frag-shader.frag").setVertexShader("./shaders/terrain-vert-shader.vert").setGridSize({
     rows: 100,
     cols: 100
-  }).setCollisionSize(import_gl_matrix10.vec3.fromValues(100, 2, 100)).setTextureSrc("./assets/textures/rocky_trail_disp_4k.png").setMaterialProperties({
-    color: import_gl_matrix10.vec3.fromValues(0.6, 0.4, 0.2),
+  }).setCollisionSize(import_gl_matrix10.vec3.fromValues(100, 2, 100)).setTextureSrc("./assets/prototype/dark/texture_02.png").setMaterialProperties({
+    color: import_gl_matrix10.vec3.fromValues(1, 1, 1),
     shinyness: 0.8,
     transparency: 1
   }).setLightProperties({
     color: import_gl_matrix10.vec3.fromValues(1, 1, 1),
-    intensity: 1,
+    intensity: 0.1,
     position: import_gl_matrix10.vec3.fromValues(-1, -1, -1),
     direction: import_gl_matrix10.vec3.fromValues(1, 1, 1),
     angle: 121,
@@ -5845,28 +5834,51 @@ var EntityManager = class {
   }
 };
 
+// src/entities/createPlayerEntity.ts
+var import_gl_matrix11 = __toESM(require_cjs());
+async function createPlayerEntity(webGLContext) {
+  const player = await new EntityBuilder(webGLContext).setIsRigidBody().setFragmentShader("./shaders/frag-shader.frag").setVertexShader("./shaders/vert-shader.vert").setMeshSize(3).setPhysicsProperties({
+    isStatic: false,
+    mass: 1
+  }).setCollisionSize(import_gl_matrix11.vec3.fromValues(10, 10, 10)).setTextureSrc("./assets/textures/short_bricks_floor_disp_1k.png").setMaterialProperties({
+    color: import_gl_matrix11.vec3.fromValues(1, 1, 1),
+    shinyness: 0.8,
+    transparency: 1
+  }).setLightProperties({
+    color: import_gl_matrix11.vec3.fromValues(1, 1, 1),
+    intensity: 1,
+    position: import_gl_matrix11.vec3.fromValues(-1, -1, -1),
+    direction: import_gl_matrix11.vec3.fromValues(1, 1, 1),
+    angle: 121,
+    innerConeAngle: 0.8,
+    outerConeAngle: 0.8,
+    cutoffAngle: 141
+  }).setPosition(import_gl_matrix11.vec3.fromValues(0, 20, 0)).build();
+  return player;
+}
+
 // src/systems/SystemInitializer.ts
-var import_gl_matrix18 = __toESM(require_cjs());
+var import_gl_matrix21 = __toESM(require_cjs());
 
 // src/cameras/FirstPersonCamera.ts
-var import_gl_matrix12 = __toESM(require_cjs());
+var import_gl_matrix13 = __toESM(require_cjs());
 
 // src/cameras/Camera.ts
-var import_gl_matrix11 = __toESM(require_cjs());
+var import_gl_matrix12 = __toESM(require_cjs());
 var Camera = class {
   constructor(position, orientation) {
     this.position = position;
     this.orientation = orientation;
   }
   getViewMatrix() {
-    const viewMatrix = import_gl_matrix11.mat4.create();
-    const inverseCameraPosition = import_gl_matrix11.vec3.create();
-    import_gl_matrix11.vec3.negate(inverseCameraPosition, this.position);
-    import_gl_matrix11.mat4.translate(viewMatrix, viewMatrix, inverseCameraPosition);
-    const cameraRotationMat = import_gl_matrix11.mat4.create();
-    import_gl_matrix11.mat4.fromQuat(cameraRotationMat, this.orientation);
-    import_gl_matrix11.mat4.multiply(viewMatrix, viewMatrix, cameraRotationMat);
-    import_gl_matrix11.mat4.invert(viewMatrix, viewMatrix);
+    const viewMatrix = import_gl_matrix12.mat4.create();
+    const inverseCameraPosition = import_gl_matrix12.vec3.create();
+    import_gl_matrix12.vec3.negate(inverseCameraPosition, this.position);
+    import_gl_matrix12.mat4.translate(viewMatrix, viewMatrix, inverseCameraPosition);
+    const cameraRotationMat = import_gl_matrix12.mat4.create();
+    import_gl_matrix12.mat4.fromQuat(cameraRotationMat, this.orientation);
+    import_gl_matrix12.mat4.multiply(viewMatrix, viewMatrix, cameraRotationMat);
+    import_gl_matrix12.mat4.invert(viewMatrix, viewMatrix);
     return viewMatrix;
   }
 };
@@ -5878,34 +5890,35 @@ var FirstPersonCamera = class extends Camera {
     this.mouseSensitivity = mouseSensitivity;
   }
   moveForward(amount) {
-    const forwardDirection = import_gl_matrix12.vec3.transformQuat(import_gl_matrix12.vec3.create(), import_gl_matrix12.vec3.fromValues(0, 0, -1), this.orientation);
-    import_gl_matrix12.vec3.scaleAndAdd(this.position, this.position, forwardDirection, -amount);
+    const forwardDirection = import_gl_matrix13.vec3.transformQuat(import_gl_matrix13.vec3.create(), import_gl_matrix13.vec3.fromValues(0, 0, -1), this.orientation);
+    import_gl_matrix13.vec3.scaleAndAdd(this.position, this.position, forwardDirection, -amount);
   }
   moveBackward(amount) {
-    const backwardDirection = import_gl_matrix12.vec3.transformQuat(import_gl_matrix12.vec3.create(), import_gl_matrix12.vec3.fromValues(0, 0, 1), this.orientation);
-    import_gl_matrix12.vec3.scaleAndAdd(this.position, this.position, backwardDirection, -amount);
+    const backwardDirection = import_gl_matrix13.vec3.transformQuat(import_gl_matrix13.vec3.create(), import_gl_matrix13.vec3.fromValues(0, 0, 1), this.orientation);
+    import_gl_matrix13.vec3.scaleAndAdd(this.position, this.position, backwardDirection, -amount);
   }
   moveLeft(amount) {
-    const right = import_gl_matrix12.vec3.transformQuat(import_gl_matrix12.vec3.create(), import_gl_matrix12.vec3.fromValues(1, 0, 0), this.orientation);
-    import_gl_matrix12.vec3.scaleAndAdd(this.position, this.position, right, amount);
+    const right = import_gl_matrix13.vec3.transformQuat(import_gl_matrix13.vec3.create(), import_gl_matrix13.vec3.fromValues(1, 0, 0), this.orientation);
+    import_gl_matrix13.vec3.scaleAndAdd(this.position, this.position, right, amount);
   }
   moveRight(amount) {
-    const right = import_gl_matrix12.vec3.transformQuat(import_gl_matrix12.vec3.create(), import_gl_matrix12.vec3.fromValues(1, 0, 0), this.orientation);
-    import_gl_matrix12.vec3.scaleAndAdd(this.position, this.position, right, -amount);
+    const right = import_gl_matrix13.vec3.transformQuat(import_gl_matrix13.vec3.create(), import_gl_matrix13.vec3.fromValues(1, 0, 0), this.orientation);
+    import_gl_matrix13.vec3.scaleAndAdd(this.position, this.position, right, -amount);
   }
   rotate(pitch, yaw) {
-    const pitchQuat = import_gl_matrix12.quat.setAxisAngle(import_gl_matrix12.quat.create(), [1, 0, 0], pitch * this.mouseSensitivity);
-    const yawQuat = import_gl_matrix12.quat.setAxisAngle(import_gl_matrix12.quat.create(), [0, 1, 0], yaw * this.mouseSensitivity);
-    import_gl_matrix12.quat.multiply(this.orientation, this.orientation, pitchQuat);
-    import_gl_matrix12.quat.multiply(this.orientation, yawQuat, this.orientation);
-    import_gl_matrix12.quat.normalize(this.orientation, this.orientation);
+    const pitchQuat = import_gl_matrix13.quat.setAxisAngle(import_gl_matrix13.quat.create(), [1, 0, 0], pitch * this.mouseSensitivity);
+    const yawQuat = import_gl_matrix13.quat.setAxisAngle(import_gl_matrix13.quat.create(), [0, 1, 0], yaw * this.mouseSensitivity);
+    import_gl_matrix13.quat.multiply(this.orientation, this.orientation, pitchQuat);
+    import_gl_matrix13.quat.multiply(this.orientation, yawQuat, this.orientation);
+    import_gl_matrix13.quat.normalize(this.orientation, this.orientation);
   }
 };
 
 // src/systems/CameraSystem.ts
-var import_gl_matrix13 = __toESM(require_cjs());
+var import_gl_matrix15 = __toESM(require_cjs());
 
 // src/utils/InputManager.ts
+var import_gl_matrix14 = __toESM(require_cjs());
 var InputManager = class {
   constructor() {
     this.keysPressed = {};
@@ -5946,6 +5959,26 @@ var InputManager = class {
   isKeyPressed(key) {
     return !!this.keysPressed[key];
   }
+  getMovementInput() {
+    const movementInput = import_gl_matrix14.vec2.create();
+    console.log(this.keysPressed);
+    if (this.isKeyPressed("w") || this.isKeyPressed("ArrowUp")) {
+      movementInput[1] -= 1;
+    }
+    if (this.isKeyPressed("s") || this.isKeyPressed("ArrowDown")) {
+      movementInput[1] += 1;
+    }
+    if (this.isKeyPressed("a") || this.isKeyPressed("ArrowLeft")) {
+      movementInput[0] -= 1;
+    }
+    if (this.isKeyPressed("d") || this.isKeyPressed("ArrowRight")) {
+      movementInput[0] += 1;
+    }
+    if (import_gl_matrix14.vec2.length(movementInput) > 0) {
+      import_gl_matrix14.vec2.normalize(movementInput, movementInput);
+    }
+    return movementInput;
+  }
 };
 
 // src/systems/System.ts
@@ -5954,7 +5987,7 @@ var System = class {
 
 // src/systems/CameraSystem.ts
 var CameraSystem = class extends System {
-  constructor(projectionMatrix, canvas, camera, moveSpeed = 5) {
+  constructor(projectionMatrix, canvas, camera, moveSpeed = 2) {
     super();
     this.prevMouseX = 0;
     this.prevMouseY = 0;
@@ -5965,7 +5998,7 @@ var CameraSystem = class extends System {
     this.canvas = canvas;
   }
   async preload() {
-    import_gl_matrix13.mat4.perspective(this.projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 1e4);
+    import_gl_matrix15.mat4.perspective(this.projectionMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 1e4);
   }
   update() {
     this.handleInput();
@@ -6007,7 +6040,7 @@ var CameraSystem = class extends System {
 };
 
 // src/systems/CollisionSystem.ts
-var import_gl_matrix14 = __toESM(require_cjs());
+var import_gl_matrix16 = __toESM(require_cjs());
 var CollisionSystem = class extends System {
   async preload() {
   }
@@ -6060,17 +6093,17 @@ var CollisionSystem = class extends System {
     const sizeA = collisionA.size;
     const positionB = transformB.position;
     const sizeB = collisionB.size;
-    const halfSizeA = import_gl_matrix14.vec3.scale(import_gl_matrix14.vec3.create(), sizeA, 0.5);
-    const halfSizeB = import_gl_matrix14.vec3.scale(import_gl_matrix14.vec3.create(), sizeB, 0.5);
-    const centerA = import_gl_matrix14.vec3.add(import_gl_matrix14.vec3.create(), positionA, halfSizeA);
-    const centerB = import_gl_matrix14.vec3.add(import_gl_matrix14.vec3.create(), positionB, halfSizeB);
-    const d = import_gl_matrix14.vec3.subtract(import_gl_matrix14.vec3.create(), centerB, centerA);
-    const combinedHalfSize = import_gl_matrix14.vec3.add(import_gl_matrix14.vec3.create(), halfSizeA, halfSizeB);
+    const halfSizeA = import_gl_matrix16.vec3.scale(import_gl_matrix16.vec3.create(), sizeA, 0.5);
+    const halfSizeB = import_gl_matrix16.vec3.scale(import_gl_matrix16.vec3.create(), sizeB, 0.5);
+    const centerA = import_gl_matrix16.vec3.add(import_gl_matrix16.vec3.create(), positionA, halfSizeA);
+    const centerB = import_gl_matrix16.vec3.add(import_gl_matrix16.vec3.create(), positionB, halfSizeB);
+    const d = import_gl_matrix16.vec3.subtract(import_gl_matrix16.vec3.create(), centerB, centerA);
+    const combinedHalfSize = import_gl_matrix16.vec3.add(import_gl_matrix16.vec3.create(), halfSizeA, halfSizeB);
     const overlapX = Math.abs(d[0]) - combinedHalfSize[0];
     const overlapY = Math.abs(d[1]) - combinedHalfSize[1];
     const overlapZ = Math.abs(d[2]) - combinedHalfSize[2];
     if (overlapX < 0 && overlapY < 0 && overlapZ < 0) {
-      const penetration = import_gl_matrix14.vec3.create();
+      const penetration = import_gl_matrix16.vec3.create();
       if (Math.abs(overlapX) < Math.abs(overlapY) && Math.abs(overlapX) < Math.abs(overlapZ)) {
         penetration[0] = overlapX * (d[0] < 0 ? -1 : 1);
       } else if (Math.abs(overlapY) < Math.abs(overlapZ)) {
@@ -6080,7 +6113,7 @@ var CollisionSystem = class extends System {
       }
       return penetration;
     }
-    return import_gl_matrix14.vec3.create();
+    return import_gl_matrix16.vec3.create();
   }
   calculateAABB(transform, collisionComponent) {
     const position = transform.position;
@@ -6097,7 +6130,7 @@ var CollisionSystem = class extends System {
 };
 
 // src/systems/LightingSystem.ts
-var import_gl_matrix15 = __toESM(require_cjs());
+var import_gl_matrix17 = __toESM(require_cjs());
 var LightingSystem = class extends System {
   async preload() {
   }
@@ -6111,7 +6144,7 @@ var LightingSystem = class extends System {
       const renderTransformComponent = renderEntity.getComponent("TransformComponent");
       if (!renderTransformComponent)
         return;
-      let combinedLightColor = import_gl_matrix15.vec3.create();
+      let combinedLightColor = import_gl_matrix17.vec3.create();
       entitiesWithLighting.forEach((lightEntity) => {
         const lightingComponent = lightEntity.getComponent("LightComponent");
         if (!lightingComponent)
@@ -6122,17 +6155,17 @@ var LightingSystem = class extends System {
         const lightColor = lightingComponent.color;
         const lightIntensity = lightingComponent.intensity;
         const lightPosition = lightingTransformComponent.position;
-        const lightDirection = import_gl_matrix15.vec3.create();
-        import_gl_matrix15.vec3.subtract(lightDirection, renderTransformComponent.position, lightPosition);
-        import_gl_matrix15.vec3.normalize(lightDirection, lightDirection);
-        const lightDistance = import_gl_matrix15.vec3.distance(renderTransformComponent.position, lightPosition);
+        const lightDirection = import_gl_matrix17.vec3.create();
+        import_gl_matrix17.vec3.subtract(lightDirection, renderTransformComponent.position, lightPosition);
+        import_gl_matrix17.vec3.normalize(lightDirection, lightDirection);
+        const lightDistance = import_gl_matrix17.vec3.distance(renderTransformComponent.position, lightPosition);
         const attenuationFactor = 1 / (1 + lightDistance * lightIntensity);
         if (lightingComponent instanceof SpotLightComponent) {
           const lightCutoffAngle = lightingComponent.cutoffAngle;
-          const angleToLight = import_gl_matrix15.vec3.angle(lightDirection, renderTransformComponent.position);
+          const angleToLight = import_gl_matrix17.vec3.angle(lightDirection, renderTransformComponent.position);
           if (angleToLight <= lightCutoffAngle) {
             const spotlightIntensity = 1 - angleToLight / lightCutoffAngle;
-            import_gl_matrix15.vec3.scaleAndAdd(combinedLightColor, combinedLightColor, lightColor, spotlightIntensity * attenuationFactor);
+            import_gl_matrix17.vec3.scaleAndAdd(combinedLightColor, combinedLightColor, lightColor, spotlightIntensity * attenuationFactor);
           }
         }
         lightingComponent.combinedLightColor = combinedLightColor;
@@ -6144,7 +6177,7 @@ var LightingSystem = class extends System {
 };
 
 // src/systems/PhysicsSystem.ts
-var import_gl_matrix16 = __toESM(require_cjs());
+var import_gl_matrix18 = __toESM(require_cjs());
 
 // src/utils/constants.ts
 var GRAVITY = 9.81;
@@ -6162,10 +6195,10 @@ var PhysicsSystem = class extends System {
       const transformComponent = entity.getComponent("TransformComponent");
       if (!transformComponent)
         continue;
-      const gravitationalForce = import_gl_matrix16.vec3.fromValues(0, -GRAVITY, 0);
-      import_gl_matrix16.vec3.scale(gravitationalForce, gravitationalForce, rigidBodyComponent.mass);
-      import_gl_matrix16.vec3.add(rigidBodyComponent.acceleration, rigidBodyComponent.acceleration, gravitationalForce);
-      import_gl_matrix16.vec3.scaleAndAdd(rigidBodyComponent.velocity, rigidBodyComponent.velocity, rigidBodyComponent.acceleration, deltaTime);
+      const gravitationalForce = import_gl_matrix18.vec3.fromValues(0, -GRAVITY, 0);
+      import_gl_matrix18.vec3.scale(gravitationalForce, gravitationalForce, rigidBodyComponent.mass);
+      import_gl_matrix18.vec3.add(rigidBodyComponent.acceleration, rigidBodyComponent.acceleration, gravitationalForce);
+      import_gl_matrix18.vec3.scaleAndAdd(rigidBodyComponent.velocity, rigidBodyComponent.velocity, rigidBodyComponent.acceleration, deltaTime);
     }
   }
   render() {
@@ -6176,6 +6209,49 @@ var PhysicsSystem = class extends System {
       return false;
     const terrainHeightThreshold = 0;
     return transformComponent.position[1] < terrainHeightThreshold;
+  }
+};
+
+// src/systems/PlayerSystem.ts
+var import_gl_matrix19 = __toESM(require_cjs());
+var PlayerSystem = class extends System {
+  constructor(playerEntity, camera) {
+    super();
+    this.cameraOffset = import_gl_matrix19.vec3.fromValues(0, 2, -5);
+    this.movementSpeed = 0.1;
+    this.jumpForce = 0.3;
+    this.playerEntity = playerEntity;
+    this.camera = camera;
+    this.inputManager = new InputManager();
+  }
+  async preload() {
+  }
+  update(deltaTime) {
+  }
+  render() {
+  }
+  handlePlayerMovement(rigidBodyComponent, transformComponent, deltaTime) {
+    const playerVelocity = rigidBodyComponent.velocity;
+    const movementInput = this.getInputMovementVector();
+    if (movementInput.length > 0) {
+      const movement = import_gl_matrix19.vec3.scale(import_gl_matrix19.vec3.create(), movementInput, this.movementSpeed);
+      console.log(transformComponent.position);
+      import_gl_matrix19.vec3.add(playerVelocity, playerVelocity, movement);
+    }
+    import_gl_matrix19.vec3.scaleAndAdd(transformComponent.position, transformComponent.position, playerVelocity, deltaTime);
+  }
+  handlePlayerJump(rigidBodyComponent) {
+    if (this.inputManager.isKeyPressed(" ")) {
+      rigidBodyComponent.velocity[1] = this.jumpForce;
+    }
+  }
+  getInputMovementVector() {
+    const movementInput = this.inputManager.getMovementInput();
+    const movementVector = import_gl_matrix19.vec3.fromValues(movementInput[0], 0, movementInput[1]);
+    if (import_gl_matrix19.vec3.length(movementVector) > 0) {
+      import_gl_matrix19.vec3.normalize(movementVector, movementVector);
+    }
+    return movementVector;
   }
 };
 
@@ -6266,13 +6342,13 @@ var RenderSystem = class extends System {
       shaderProgram.setUniform1f("lightIntensity", lightComponent.intensity);
       shaderProgram.setUniform3f("lightDirection", lightComponent.direction);
       shaderProgram.setUniform3f("ambientLightColor", lightComponent.combinedLightColor);
-      shaderProgram.setUniform1f("ambientLightIntensity", 0.4);
+      shaderProgram.setUniform1f("ambientLightIntensity", 8);
     }
   }
 };
 
 // src/systems/TransformSystem.ts
-var import_gl_matrix17 = __toESM(require_cjs());
+var import_gl_matrix20 = __toESM(require_cjs());
 var TransformSystem = class extends System {
   async preload(entityManager) {
     const entities = entityManager.getEntitiesByComponents(["TransformComponent", "RenderComponent"]);
@@ -6307,7 +6383,7 @@ var TransformSystem = class extends System {
       const transformComponent = entity.getComponent("TransformComponent");
       if (!transformComponent)
         continue;
-      import_gl_matrix17.vec3.scaleAndAdd(transformComponent.position, transformComponent.position, rigidBodyComponent.velocity, deltaTime);
+      import_gl_matrix20.vec3.scaleAndAdd(transformComponent.position, transformComponent.position, rigidBodyComponent.velocity, deltaTime);
       const modelMatrix = this.getModelMatrix(transformComponent);
       const renderComponent = entity.getComponent("RenderComponent");
       if (!renderComponent)
@@ -6318,28 +6394,29 @@ var TransformSystem = class extends System {
     }
   }
   getModelMatrix(transformComponent) {
-    const modelMatrix = import_gl_matrix17.mat4.create();
-    import_gl_matrix17.mat4.translate(modelMatrix, modelMatrix, transformComponent.position);
-    import_gl_matrix17.mat4.rotateX(modelMatrix, modelMatrix, transformComponent.rotation[0]);
-    import_gl_matrix17.mat4.rotateY(modelMatrix, modelMatrix, transformComponent.rotation[1]);
-    import_gl_matrix17.mat4.rotateZ(modelMatrix, modelMatrix, transformComponent.rotation[2]);
-    import_gl_matrix17.mat4.scale(modelMatrix, modelMatrix, transformComponent.scale);
+    const modelMatrix = import_gl_matrix20.mat4.create();
+    import_gl_matrix20.mat4.translate(modelMatrix, modelMatrix, transformComponent.position);
+    import_gl_matrix20.mat4.rotateX(modelMatrix, modelMatrix, transformComponent.rotation[0]);
+    import_gl_matrix20.mat4.rotateY(modelMatrix, modelMatrix, transformComponent.rotation[1]);
+    import_gl_matrix20.mat4.rotateZ(modelMatrix, modelMatrix, transformComponent.rotation[2]);
+    import_gl_matrix20.mat4.scale(modelMatrix, modelMatrix, transformComponent.scale);
     return modelMatrix;
   }
 };
 
 // src/systems/SystemInitializer.ts
 var SystemInitializer = class {
-  static initializeSystems(window, bufferManager, cameraSpeed, mouseSensitivity) {
+  static initializeSystems(window, playerEntity, bufferManager, cameraSpeed, mouseSensitivity) {
     const camera = new FirstPersonCamera(config.cameraPosition, config.cameraRotation, mouseSensitivity);
-    const projectionMatrix = import_gl_matrix18.mat4.create();
+    const projectionMatrix = import_gl_matrix21.mat4.create();
+    const playerSystem = new PlayerSystem(playerEntity, camera);
     const renderSystem = new RenderSystem(window, bufferManager, camera, projectionMatrix);
     const transformSystem = new TransformSystem();
     const cameraSystem = new CameraSystem(projectionMatrix, window, camera, cameraSpeed);
     const lightingSystem = new LightingSystem();
     const collisionSystem = new CollisionSystem();
     const physicsSystem = new PhysicsSystem();
-    return [cameraSystem, lightingSystem, physicsSystem, collisionSystem, transformSystem, renderSystem];
+    return [cameraSystem, lightingSystem, physicsSystem, collisionSystem, transformSystem, playerSystem, renderSystem];
   }
 };
 
@@ -6350,7 +6427,8 @@ var main = async () => {
     const window = new WebGLCanvas(config.canvasWidth, config.canvasHeight);
     await EntityInitializer.initializeEntities(entityManager, window.gl);
     const bufferManager = new BufferManager(window.gl);
-    const systems = SystemInitializer.initializeSystems(window, bufferManager, config.cameraSpeed, config.mouseSensitivity);
+    const player = await createPlayerEntity(window.gl);
+    const systems = SystemInitializer.initializeSystems(window, player, bufferManager, config.cameraSpeed, config.mouseSensitivity);
     const game = new Game(entityManager);
     game.addSystems(systems);
     game.run();

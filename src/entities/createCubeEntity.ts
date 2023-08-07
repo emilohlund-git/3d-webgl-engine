@@ -7,13 +7,13 @@ export async function createCubeEntity(webGLContext: WebGL2RenderingContext): Pr
     .setIsRigidBody()
     .setFragmentShader("./shaders/frag-shader.frag")
     .setVertexShader("./shaders/vert-shader.vert")
-    .setMeshSize(10)
+    .setMeshSize(2)
     .setPhysicsProperties({
       isStatic: false,
-      mass: 1
+      mass: 0.2
     })
-    .setCollisionSize(vec3.fromValues(10, 10, 10))
-    .setTextureSrc("./assets/textures/short_bricks_floor_disp_1k.png")
+    .setCollisionSize(vec3.fromValues(2, 2, 2))
+    .setTextureSrc("./assets/prototype/Orange/texture_01.png")
     .setMaterialProperties({
       color: vec3.fromValues(1.0, 1.0, 1.0),
       shinyness: 0.8,
@@ -21,13 +21,13 @@ export async function createCubeEntity(webGLContext: WebGL2RenderingContext): Pr
     })
     .setLightProperties({
       color: vec3.fromValues(1.0, 1.0, 1.0),
-      intensity: 1,
-      position: vec3.fromValues(-1.0, -1.0, -1.0),
-      direction: vec3.fromValues(1.0, 1.0, 1.0),
-      angle: 121,
-      innerConeAngle: 0.8,
-      outerConeAngle: 0.8,
-      cutoffAngle: 141
+      intensity: 0.1,
+      position: vec3.fromValues(0.0, -10.0, 0.0),
+      direction: vec3.fromValues(0.0, 1.0, 0.0),
+      angle: 360,
+      innerConeAngle: 360,
+      outerConeAngle: 360,
+      cutoffAngle: 360
     })
     .setPosition(vec3.fromValues(0.0, 20.0, 0.0))
     .build();

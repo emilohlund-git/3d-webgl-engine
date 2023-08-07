@@ -103,20 +103,6 @@ export class MeshUtils {
     return { vertices, indices, normals, uvs };
   }
 
-  private static generateTerrainUVs(width: number, length: number): number[] {
-    const uvs = [];
-
-    for (let z = 0; z <= length; z++) {
-      for (let x = 0; x <= width; x++) {
-        const u = z / 2;
-        const v = x / 2;
-        uvs.push(u, v);
-      }
-    }
-
-    return uvs;
-  }
-
   private static generateCubeUVs(): number[] {
     return [
       // Front

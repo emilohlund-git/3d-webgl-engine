@@ -1,7 +1,7 @@
 import { mat4, quat, vec3 } from "gl-matrix";
 
 export abstract class Camera {
-  protected position: vec3;
+  public position: vec3;
   protected orientation: quat;
 
   constructor(position: vec3, orientation: quat) {

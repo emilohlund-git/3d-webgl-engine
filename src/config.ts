@@ -5,6 +5,6 @@ export const config = {
   canvasHeight: 900,
   cameraPosition: vec3.fromValues(0, -10, -8.0),
   cameraRotation: quat.create(),
-  cameraSpeed: 2,
+  cameraSpeed: 0.05,
   mouseSensitivity: 2,
 };

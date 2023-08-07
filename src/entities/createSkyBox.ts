@@ -9,12 +9,12 @@ export async function createSkybox(webGLContext: WebGL2RenderingContext): Promis
     .setVertexShader("./shaders/skybox-vert-shader.vert")
     .setMeshSize(10000)
     .setTextureSrcList([
-      "./assets/skybox/yellow/yellow_rt.jpg",
-      "./assets/skybox/yellow/yellow_lf.jpg",
-      "./assets/skybox/yellow/yellow_up.jpg",
-      "./assets/skybox/yellow/yellow_dn.jpg",
-      "./assets/skybox/yellow/yellow_bk.jpg",
-      "./assets/skybox/yellow/yellow_ft.jpg",
+      "./assets/skybox/daylight/Daylight Box_Left.bmp",
+      "./assets/skybox/daylight/Daylight Box_Right.bmp",
+      "./assets/skybox/daylight/Daylight Box_Top.png",
+      "./assets/skybox/daylight/Daylight Box_Bottom.bmp",
+      "./assets/skybox/daylight/Daylight Box_Back.bmp",
+      "./assets/skybox/daylight/Daylight Box_Front.bmp",
     ])
     .setMaterialProperties({
       color: vec3.fromValues(1.0, 1.0, 1.0),

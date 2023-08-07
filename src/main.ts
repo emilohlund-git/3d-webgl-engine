@@ -4,6 +4,7 @@ import { BufferManager } from "./buffers/BufferManager";
 import { config } from "./config";
 import { EntityInitializer } from "./entities/EntitiyInitializer";
 import { EntityManager } from "./entities/EntityManager";
+import { createPlayerEntity } from "./entities/createPlayerEntity";
 import { SystemInitializer } from "./systems/SystemInitializer";
 
 const main = async () => {
@@ -16,7 +17,9 @@ const main = async () => {
 
     const bufferManager = new BufferManager(window.gl);
 
-    const systems = SystemInitializer.initializeSystems(window, bufferManager, config.cameraSpeed, config.mouseSensitivity);
+    const player = await createPlayerEntity(window.gl);
+
+    const systems = SystemInitializer.initializeSystems(window, player, bufferManager, config.cameraSpeed, config.mouseSensitivity);
 
     const game = new Game(entityManager);
     game.addSystems(systems);

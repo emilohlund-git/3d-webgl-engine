@@ -118,7 +118,7 @@ export class RenderSystem extends System {
       shaderProgram.setUniform1f("lightIntensity", lightComponent.intensity);
       shaderProgram.setUniform3f("lightDirection", lightComponent.direction);
       shaderProgram.setUniform3f("ambientLightColor", lightComponent.combinedLightColor);
-      shaderProgram.setUniform1f("ambientLightIntensity", 0.4); // Adjust intensity as needed
+      shaderProgram.setUniform1f("ambientLightIntensity", 8); // Adjust intensity as needed
     }
   }
 }

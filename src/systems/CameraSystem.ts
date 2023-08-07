@@ -20,7 +20,7 @@ export class CameraSystem extends System {
     projectionMatrix: mat4,
     canvas: WebGLCanvas,
     camera: Camera,
-    moveSpeed: number = 5,
+    moveSpeed: number = 2,
   ) {
     super();
 

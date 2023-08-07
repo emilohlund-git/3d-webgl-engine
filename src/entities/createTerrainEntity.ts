@@ -16,15 +16,15 @@ export async function createTerrainEntity(webGLContext: WebGL2RenderingContext) 
       cols: 100
     })
     .setCollisionSize(vec3.fromValues(100, 2, 100))
-    .setTextureSrc("./assets/textures/rocky_trail_disp_4k.png")
+    .setTextureSrc("./assets/prototype/dark/texture_02.png")
     .setMaterialProperties({
-      color: vec3.fromValues(0.6, 0.4, 0.2),
+      color: vec3.fromValues(1.0, 1.0, 1.0),
       shinyness: 0.8,
       transparency: 1
     })
     .setLightProperties({
       color: vec3.fromValues(1.0, 1.0, 1.0),
-      intensity: 1,
+      intensity: 0.1,
       position: vec3.fromValues(-1.0, -1.0, -1.0),
       direction: vec3.fromValues(1.0, 1.0, 1.0),
       angle: 121,
