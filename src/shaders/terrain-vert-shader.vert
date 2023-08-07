@@ -3,7 +3,6 @@
 // Input attributes
 in vec3 position; // Vertex position
 in vec3 normal;   // Vertex normal
-in vec2 uv;
 
 out vec3 vColor;
 out vec3 vNormal; // Output surface normal to fragment shader
@@ -49,5 +48,5 @@ void main() {
   // Transform the normal to world space
   vNormal = normalize(mat3(mvMatrix) * normal);
 
-  vUv = uv;
+  vUv = vec2(position.x, position.z);
 }

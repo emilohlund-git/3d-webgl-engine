@@ -1,6 +1,7 @@
-import { mat4 } from "gl-matrix";
-import { RenderComponent } from "../components/RenderComponent";
+import { mat4, vec3 } from "gl-matrix";
+import { RigidBodyComponent } from "../components/RigidBodyComponent";
 import { TransformComponent } from "../components/TransformComponent";
+import { RenderComponent } from "../components/rendering/RenderComponent";
 import { Entity } from "../entities/Entity";
 import { EntityManager } from "../entities/EntityManager";
 import { System } from "./System";
@@ -11,7 +12,10 @@ export class TransformSystem extends System {
     this.preloadEntities(entities);
   }
 
-  update(_: number, entityManager: EntityManager) { }
+  update(deltaTime: number, entityManager: EntityManager) {
+    const entities = entityManager.getEntitiesByComponent("RigidBodyComponent");
+    this.updateEntities(deltaTime, entities);
+  }
 
   render() { }
 
@@ -32,13 +36,37 @@ export class TransformSystem extends System {
     };
   }
 
-  private getModelMatrix(transformComponent: TransformComponent): mat4 {
-    mat4.translate(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.position);
-    mat4.rotateX(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[0]);
-    mat4.rotateY(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[1]);
-    mat4.rotateZ(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.rotation[2]);
-    mat4.scale(transformComponent.modelMatrix, transformComponent.modelMatrix, transformComponent.scale);
+  private updateEntities(deltaTime: number, entities: Entity[]) {
+    for (const entity of entities) {
+      const rigidBodyComponent = entity.getComponent<RigidBodyComponent>("RigidBodyComponent");
+      if (!rigidBodyComponent) continue;
 
-    return transformComponent.modelMatrix;
+      const transformComponent = entity.getComponent<TransformComponent>("TransformComponent");
+      if (!transformComponent) continue;
+
+      // Apply velocity to position based on deltaTime
+      vec3.scaleAndAdd(transformComponent.position, transformComponent.position, rigidBodyComponent.velocity, deltaTime);
+
+      const modelMatrix = this.getModelMatrix(transformComponent);
+
+      const renderComponent = entity.getComponent<RenderComponent>("RenderComponent");
+      if (!renderComponent) continue;
+
+      const shaderProgram = renderComponent.shaderProgram;
+      shaderProgram.use();
+      shaderProgram.setUniformMatrix4fv("mMatrix", modelMatrix);
+    }
+  }
+
+  private getModelMatrix(transformComponent: TransformComponent): mat4 {
+    const modelMatrix = mat4.create();
+
+    mat4.translate(modelMatrix, modelMatrix, transformComponent.position);
+    mat4.rotateX(modelMatrix, modelMatrix, transformComponent.rotation[0]);
+    mat4.rotateY(modelMatrix, modelMatrix, transformComponent.rotation[1]);
+    mat4.rotateZ(modelMatrix, modelMatrix, transformComponent.rotation[2]);
+    mat4.scale(modelMatrix, modelMatrix, transformComponent.scale);
+
+    return modelMatrix;
   }
 }

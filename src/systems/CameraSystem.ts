@@ -1,10 +1,10 @@
 import { mat4 } from "gl-matrix";
-import { InputManager } from "../InputManager";
 import { ShaderProgram } from "../ShaderProgram";
 import { WebGLCanvas } from "../WebGLCanvas";
 import { Camera } from "../cameras/Camera";
-import { RenderComponent } from "../components/RenderComponent";
+import { RenderComponent } from "../components/rendering/RenderComponent";
 import { EntityManager } from "../entities/EntityManager";
+import { InputManager } from "../utils/InputManager";
 import { System } from "./System";
 
 export class CameraSystem extends System {

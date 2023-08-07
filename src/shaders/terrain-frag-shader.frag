@@ -18,25 +18,25 @@ uniform sampler2D textureSampler;
 
 void main() {
   // Normalize the surface normal
-    vec3 normal = normalize(vNormal);
+  vec3 normal = normalize(vNormal);
 
   // Calculate the dot product between the light direction and the surface normal
-    float dotProduct = max(dot(normal, vLightDirection), 0.0f);
+  float dotProduct = max(dot(normal, vLightDirection), 0.0f);
 
   // Compute the directional lighting contribution using the dot product
-    vec3 directionalContribution = lightColor * lightIntensity * dotProduct;
+  vec3 directionalContribution = lightColor * lightIntensity * dotProduct;
 
   // Compute the ambient lighting contribution
-    vec3 ambientContribution = ambientLightColor * ambientLightIntensity;
+  vec3 ambientContribution = ambientLightColor * ambientLightIntensity;
 
   // Combine the directional and ambient lighting contributions
-    vec3 lightingContribution = directionalContribution + ambientContribution;
+  vec3 lightingContribution = directionalContribution + ambientContribution;
 
   // Apply the lighting to the vertex color
-    vec3 finalColor = vColor * lightingContribution;
+  vec3 finalColor = vColor * lightingContribution;
 
   // Sample the texture and apply it to the material
-    vec4 textureColor = texture(textureSampler, vUv);
+  vec4 textureColor = texture(textureSampler, vUv);
 
-    outColor = vec4((finalColor * textureColor.rgb), 1.0f);
+  outColor = vec4((finalColor * textureColor.rgb), 1.0f);
 }

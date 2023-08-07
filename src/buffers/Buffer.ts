@@ -25,6 +25,7 @@ export abstract class GLBuffer {
   associateWithAttribute(name: string, program: WebGLProgram, attribute: string, size: number, type: number, stride: number, offset: number) {
     if (!this.buffers.get(name)) return;
 
+
     this.bindBuffer(name);
     const attributeLocation = this.gl.getAttribLocation(program, attribute);
     this.gl.vertexAttribPointer(attributeLocation, size, type, false, stride, offset);

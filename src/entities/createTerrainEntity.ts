@@ -4,11 +4,11 @@ import { EntityBuilder } from "./EntityBuilder";
 export async function createTerrainEntity(webGLContext: WebGL2RenderingContext) {
   const terrain = await new EntityBuilder(webGLContext)
     .setIsTerrain()
-    .setFragmentShader("./shaders/frag-shader.frag")
-    .setVertexShader("./shaders/vert-shader.vert")
+    .setFragmentShader("./shaders/terrain-frag-shader.frag")
+    .setVertexShader("./shaders/terrain-vert-shader.vert")
     .setGridSize({
-      rows: 200,
-      cols: 200
+      rows: 10,
+      cols: 10
     })
     .setTextureSrc("./assets/textures/rocky_trail_disp_4k.png")
     .setMaterialProperties({

@@ -1,8 +1,8 @@
 import { vec3 } from "gl-matrix";
 import { LightComponent } from "../components/LightComponent";
-import { RenderComponent } from "../components/RenderComponent";
 import { TransformComponent } from "../components/TransformComponent";
 import { SpotLightComponent } from "../components/lights/SpotLightComponent";
+import { RenderComponent } from "../components/rendering/RenderComponent";
 import { EntityManager } from "../entities/EntityManager";
 import { System } from "./System";
 

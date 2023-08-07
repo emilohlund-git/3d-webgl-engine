@@ -7,7 +7,7 @@ export async function createSkybox(webGLContext: WebGL2RenderingContext): Promis
     .setIsSkybox()
     .setFragmentShader("./shaders/skybox-frag-shader.frag")
     .setVertexShader("./shaders/skybox-vert-shader.vert")
-    .setMeshSize(1000)
+    .setMeshSize(10000)
     .setTextureSrcList([
       "./assets/skybox/yellow/yellow_rt.jpg",
       "./assets/skybox/yellow/yellow_lf.jpg",

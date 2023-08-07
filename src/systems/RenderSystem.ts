@@ -4,7 +4,7 @@ import { BufferManager } from "../buffers/BufferManager";
 import { Camera } from "../cameras/Camera";
 import { LightComponent } from "../components/LightComponent";
 import { MaterialComponent } from "../components/MaterialComponent";
-import { RenderComponent } from "../components/RenderComponent";
+import { RenderComponent } from "../components/rendering/RenderComponent";
 import { Entity } from "../entities/Entity";
 import { EntityManager } from "../entities/EntityManager";
 import { System } from "./System";
@@ -94,7 +94,10 @@ export class RenderSystem extends System {
         this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "normal", 3, this.gl.FLOAT, 0, 0);
       }
       this.bufferManager.associateVBOWithAttribute(entity.id, renderComponent.shaderProgram, "position", 3, this.gl.FLOAT, 0, 0);
-      this.bufferManager.associateUVWithAttribute(entity.id, renderComponent.shaderProgram, "uv", 2, this.gl.FLOAT, 0, 0);
+
+      // Terrain components calculate their UV mappings on the GPU
+      if (renderComponent.uvs)
+        this.bufferManager.associateUVWithAttribute(entity.id, renderComponent.shaderProgram, "uv", 2, this.gl.FLOAT, 0, 0);
       this.gl.drawElements(this.gl.TRIANGLES, renderComponent.indices.length, this.gl.UNSIGNED_SHORT, 0);
     }
   }

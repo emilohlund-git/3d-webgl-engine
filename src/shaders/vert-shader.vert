@@ -30,8 +30,9 @@ void main() {
   // Combine the matrices to get the final transformation matrix
   mat4 mvMatrix = vMatrix * mMatrix;
 
+  vec4 vPosition = pMatrix * mvMatrix * vec4(position, 1.0f);
   // Transform the vertex position based on the model-view matrix
-  gl_Position = pMatrix * mvMatrix * vec4(position, 1.0f);
+  gl_Position = vPosition;
 
   // Compute the lighting contribution
   vec3 directionalLighting = max(lightColor * lightIntensity, vec3(minIntensity));

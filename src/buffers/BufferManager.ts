@@ -2,7 +2,7 @@ import { ShaderProgram } from "../ShaderProgram";
 import { ColorBuffer } from "../buffers/ColorBuffer";
 import { IBO } from "../buffers/IBO";
 import { VBO } from "../buffers/VBO";
-import { RenderComponent } from "../components/RenderComponent";
+import { RenderComponent } from "../components/rendering/RenderComponent";
 import { UV } from "./UV";
 
 export class BufferManager {
@@ -47,7 +47,9 @@ export class BufferManager {
   createBuffers(id: string, renderComponent: RenderComponent) {
     this.createVBO(id, new Float32Array(renderComponent.vertices));
     this.createIBO(id, new Uint16Array(renderComponent.indices));
-    this.createUV(id, new Float32Array(renderComponent.uvs));
+    if (renderComponent.uvs) {
+      this.createUV(id, new Float32Array(renderComponent.uvs));
+    }
   }
 
   bindVBO(id: string) {
@@ -77,7 +79,6 @@ export class BufferManager {
   bindBuffers(id: string) {
     this.bindVBO(id);
     this.bindIBO(id);
-    this.bindUV(id);
   }
 
   unbindVBO(id: string) {
@@ -107,7 +108,6 @@ export class BufferManager {
   inbindBuffers(id: string) {
     this.unbindVBO(id);
     this.unbindIBO(id);
-    this.unbindUV(id);
   }
 
   associateVBOWithAttribute(id: string, program: ShaderProgram, attribute: string, size: number, type: number, stride: number, offset: number) {

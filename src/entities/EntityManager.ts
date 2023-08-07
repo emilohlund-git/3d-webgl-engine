@@ -1,6 +1,8 @@
 import { Entity } from "./Entity";
 
-export type ComponentName = "RenderComponent" | "TransformComponent" | "LightComponent" | "MaterialComponent" | "CollisionComponent" | "RigidBodyComponent" | "SkyboxComponent";
+export type ComponentName = "RenderComponent" | "TerrainComponent" | "TransformComponent" |
+  "LightComponent" | "MaterialComponent" | "CollisionComponent" | "RigidBodyComponent" | "SkyboxComponent" |
+  "MeshComponent";
 
 export class EntityManager {
   private entities = <Entity[]>[];
@@ -29,7 +31,7 @@ export class EntityManager {
     const uniqueEntities: Set<Entity> = new Set();
 
     this.entities.forEach((entity) => {
-      if (components.every((c) => entity.getComponent(c) !== undefined)) {
+      if (components.some((c) => entity.getComponent(c) !== undefined)) {
         uniqueEntities.add(entity);
       }
     });

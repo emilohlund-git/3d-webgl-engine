@@ -1,11 +1,13 @@
 import { vec3 } from "gl-matrix";
 import { ShaderProgram } from "../ShaderProgram";
 import { MaterialComponent } from "../components/MaterialComponent";
-import { RenderComponent } from "../components/RenderComponent";
-import { SkyboxComponent } from "../components/SkyboxComponent";
+import { RigidBodyComponent } from "../components/RigidBodyComponent";
 import { TransformComponent } from "../components/TransformComponent";
 import { SpotLightComponent } from "../components/lights/SpotLightComponent";
+import { RenderComponent } from "../components/rendering/RenderComponent";
+import { SkyboxComponent } from "../components/rendering/SkyboxComponent";
 import { Mesh, MeshUtils } from "../utils/MeshUtils";
+import { TerrainUtils } from "../utils/TerrainUtils";
 import { TextureUtils } from "../utils/TextureUtils";
 import { Entity } from "./Entity";
 
@@ -13,6 +15,8 @@ export class EntityBuilder {
   private webGLContext: WebGL2RenderingContext;
   private isSkybox: boolean = false;
   private isTerrain: boolean = false;
+  private heightMap: number[][] | undefined;
+  private isRigidBody: boolean = false;
   private meshSize: number = 1;
   private gridSize: {
     rows: number;
@@ -54,6 +58,13 @@ export class EntityBuilder {
       transparency: 1.0,
     };
   private position: vec3 = vec3.create();
+  private physicsProperties: {
+    mass: number;
+    isStatic: boolean;
+  } = {
+      mass: 5,
+      isStatic: false, // Whether the rigid body is immovable
+    }
 
   constructor(webGLContext: WebGL2RenderingContext) {
     this.webGLContext = webGLContext;
@@ -61,6 +72,18 @@ export class EntityBuilder {
 
   setMeshSize(size: number): this {
     this.meshSize = size;
+    return this;
+  }
+
+  setHeightMap(width: number, height: number, frequency: number, amplitude: number, octaves: number) {
+    this.heightMap = TerrainUtils.generateHeightMap(width, height, frequency, amplitude, octaves);
+  }
+
+  setPhysicsProperties(physicsProperties: {
+    mass: number;
+    isStatic: boolean;
+  }): this {
+    this.physicsProperties = { ...this.physicsProperties, ...physicsProperties };
     return this;
   }
 
@@ -97,6 +120,11 @@ export class EntityBuilder {
 
   setIsSkybox(): this {
     this.isSkybox = true;
+    return this;
+  }
+
+  setIsRigidBody(): this {
+    this.isRigidBody = true;
     return this;
   }
 
@@ -143,7 +171,7 @@ export class EntityBuilder {
     await shaderProgram.initializeShaders(this.vertexShaderSource, this.fragmentShaderSource);
 
     const meshData = this.generateMesh();
-    if (!meshData.vertices || !meshData.indices || !meshData.normals || !meshData.uvs) {
+    if (!meshData.vertices || !meshData.indices || !meshData.normals) {
       throw new Error("Failed to generate mesh.");
     }
 
@@ -159,6 +187,11 @@ export class EntityBuilder {
       entity.addComponent("LightComponent", lightComponent);
     } else {
       entity.addComponent("SkyboxComponent", new SkyboxComponent());
+    }
+
+    if (this.isRigidBody) {
+      const rigidBodyComponent = this.createRigidBodyComponent(this.physicsProperties);
+      entity.addComponent("RigidBodyComponent", rigidBodyComponent);
     }
 
     entity.addComponent("RenderComponent", renderComponent);
@@ -179,7 +212,7 @@ export class EntityBuilder {
 
   private generateMesh(): Mesh {
     if (this.isTerrain) {
-      return MeshUtils.generateGridMesh(this.gridSize.rows, this.gridSize.cols);
+      return MeshUtils.generateGridMesh(this.gridSize.rows, this.gridSize.cols, this.heightMap);
     } else {
       return MeshUtils.generateCubeMesh(this.meshSize);
     }
@@ -212,6 +245,16 @@ export class EntityBuilder {
       this.materialProperties.shinyness,
       this.materialProperties.transparency,
       texture
+    );
+  }
+
+  private createRigidBodyComponent(physicsProperties: {
+    mass: number;
+    isStatic: boolean;
+  }) {
+    return new RigidBodyComponent(
+      physicsProperties.mass,
+      physicsProperties.isStatic
     );
   }
 }

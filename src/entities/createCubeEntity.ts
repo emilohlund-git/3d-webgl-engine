@@ -6,7 +6,11 @@ export async function createCubeEntity(webGLContext: WebGL2RenderingContext): Pr
   const cube = await new EntityBuilder(webGLContext)
     .setFragmentShader("./shaders/frag-shader.frag")
     .setVertexShader("./shaders/vert-shader.vert")
-    .setMeshSize(20)
+    .setMeshSize(10)
+    .setPhysicsProperties({
+      isStatic: false,
+      mass: 1
+    })
     .setTextureSrc("./assets/textures/short_bricks_floor_disp_1k.png")
     .setMaterialProperties({
       color: vec3.fromValues(1.0, 1.0, 1.0),

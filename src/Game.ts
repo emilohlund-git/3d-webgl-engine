@@ -2,7 +2,8 @@ import { EntityManager } from "./entities/EntityManager";
 import { System } from "./systems/System";
 
 export class Game {
-  private lastUpdateTime = 0;
+  private prevTimestamp = 0;
+  private deltaTime = 0;
   private systems = new Set<System>();
   private readonly entityManager: EntityManager;
 
@@ -20,11 +21,11 @@ export class Game {
   }
 
   private gameLoop() {
-    const now = Date.now();
-    const deltaTime = now - this.lastUpdateTime;
-    this.lastUpdateTime = now;
+    const currentTimeStamp = performance.now();
+    this.deltaTime = (currentTimeStamp - this.prevTimestamp) / 1000;
+    this.prevTimestamp = currentTimeStamp;
 
-    this.update(deltaTime);
+    this.update(this.deltaTime);
     this.render();
 
     requestAnimationFrame(this.gameLoop);

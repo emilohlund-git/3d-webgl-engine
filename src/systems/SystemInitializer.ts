@@ -6,6 +6,7 @@ import { config } from "../config";
 import { CameraSystem } from "./CameraSystem";
 import { CollisionSystem } from "./CollisionSystem";
 import { LightingSystem } from "./LightingSystem";
+import { PhysicsSystem } from "./PhysicsSystem";
 import { RenderSystem } from "./RenderSystem";
 import { System } from "./System";
 import { TransformSystem } from "./TransformSystem";
@@ -20,7 +21,8 @@ export class SystemInitializer {
     const cameraSystem = new CameraSystem(projectionMatrix, window, camera, cameraSpeed);
     const lightingSystem = new LightingSystem();
     const collisionSystem = new CollisionSystem();
+    const physicsSystem = new PhysicsSystem();
 
-    return [cameraSystem, transformSystem, lightingSystem, renderSystem, collisionSystem];
+    return [cameraSystem, transformSystem, lightingSystem, physicsSystem, collisionSystem, renderSystem];
   }
 }

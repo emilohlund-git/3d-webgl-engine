@@ -1,1 +1,3 @@
 export const MAX_ENTITIES_PER_NODE = 10;
+export const GRAVITY = 9.81;
+export const GRAVITATIONAL_CONSTANT = 0.000000000003;

@@ -5,15 +5,13 @@ export interface Mesh {
   vertices: number[];
   indices: number[];
   normals: vec3[];
-  uvs: number[];
+  uvs?: number[];
 }
 
 export class MeshUtils {
-  static generateGridMesh(rows: number, cols: number): Mesh {
-    const heightmap = TerrainUtils.generateHeightMap(rows, cols, 0.02, 1.0, 0.6);
-
-    const terrainSizeX = heightmap[0].length;
-    const terrainSizeZ = heightmap.length;
+  static generateGridMesh(rows: number, cols: number, heightmap: number[][] | undefined): Mesh {
+    const terrainSizeX = heightmap ? heightmap[0].length : rows;
+    const terrainSizeZ = heightmap ? heightmap.length : cols;
     const terrainScaleY = 4; // Adjust this to control the terrain height
 
     const vertices = [];
@@ -22,7 +20,7 @@ export class MeshUtils {
     // Create the flat grid vertices using heightmap data
     for (let z = 0; z < terrainSizeZ; z++) {
       for (let x = 0; x < terrainSizeX; x++) {
-        const height = heightmap[z][x] * terrainScaleY;
+        const height = heightmap ? heightmap[z][x] * terrainScaleY : 1;
         vertices.push(x, height, z);
       }
     }
@@ -44,9 +42,8 @@ export class MeshUtils {
     }
 
     const normals = TerrainUtils.computeVertexNormals(vertices, indices);
-    const uvs = this.generateTerrainUVs(rows, cols);
 
-    return { vertices, indices, normals, uvs };
+    return { vertices, indices, normals };
   }
 
   static generateCubeMesh(size: number): Mesh {
@@ -111,8 +108,8 @@ export class MeshUtils {
 
     for (let z = 0; z <= length; z++) {
       for (let x = 0; x <= width; x++) {
-        const u = x / width;
-        const v = z / length;
+        const u = z / 2;
+        const v = x / 2;
         uvs.push(u, v);
       }
     }
@@ -121,8 +118,6 @@ export class MeshUtils {
   }
 
   private static generateCubeUVs(): number[] {
-    // TODO: Find a way to generate UVs programatically
-
     return [
       // Front
       0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
