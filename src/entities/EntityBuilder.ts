@@ -7,6 +7,7 @@ import { TransformComponent } from "../components/TransformComponent";
 import { SpotLightComponent } from "../components/lights/SpotLightComponent";
 import { RenderComponent } from "../components/rendering/RenderComponent";
 import { SkyboxComponent } from "../components/rendering/SkyboxComponent";
+import { TerrainComponent } from "../components/rendering/TerrainComponent";
 import { Mesh, MeshUtils } from "../utils/MeshUtils";
 import { TerrainUtils } from "../utils/TerrainUtils";
 import { TextureUtils } from "../utils/TextureUtils";
@@ -200,6 +201,11 @@ export class EntityBuilder {
       const rigidBodyComponent = this.createRigidBodyComponent(this.physicsProperties);
       entity.addComponent("RigidBodyComponent", rigidBodyComponent);
       entity.addComponent("CollisionComponent", new CollisionComponent(this.collisionSize));
+    }
+
+    if (this.isTerrain) {
+      const terrainComponent = new TerrainComponent();
+      entity.addComponent("TerrainComponent", terrainComponent);
     }
 
     entity.addComponent("RenderComponent", renderComponent);

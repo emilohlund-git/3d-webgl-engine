@@ -1,7 +1,6 @@
 import { vec3 } from "gl-matrix";
 import { RigidBodyComponent } from "../components/RigidBodyComponent";
 import { TransformComponent } from "../components/TransformComponent";
-import { Entity } from "../entities/Entity";
 import { EntityManager } from "../entities/EntityManager";
 import { GRAVITY } from "../utils/constants";
 import { System } from "./System";
@@ -20,6 +19,9 @@ export class PhysicsSystem extends System {
       const transformComponent = entity.getComponent<TransformComponent>("TransformComponent");
       if (!transformComponent) continue;
 
+      // Reset the acceleration vector to zero at the beginning of each frame
+      vec3.set(rigidBodyComponent.acceleration, 0, 0, 0);
+
       // Check if the entity is falling (velocity.y is negative)
       const gravitationalForce = vec3.fromValues(0, -GRAVITY, 0);
       vec3.scale(gravitationalForce, gravitationalForce, rigidBodyComponent.mass);
@@ -33,13 +35,4 @@ export class PhysicsSystem extends System {
   }
 
   render() { }
-
-  private isCollidingWithTerrain(entity: Entity): boolean {
-    const transformComponent = entity.getComponent<TransformComponent>("TransformComponent");
-    if (!transformComponent) return false;
-
-    const terrainHeightThreshold = 0.0;
-
-    return transformComponent.position[1] < terrainHeightThreshold;
-  }
 }

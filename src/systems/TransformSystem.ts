@@ -45,7 +45,8 @@ export class TransformSystem extends System {
       if (!transformComponent) continue;
 
       // Apply velocity to position based on deltaTime
-      vec3.scaleAndAdd(transformComponent.position, transformComponent.position, rigidBodyComponent.velocity, deltaTime);
+      if (!rigidBodyComponent.isStatic)
+        vec3.scaleAndAdd(transformComponent.position, transformComponent.position, rigidBodyComponent.velocity, deltaTime);
 
       const modelMatrix = this.getModelMatrix(transformComponent);
 
